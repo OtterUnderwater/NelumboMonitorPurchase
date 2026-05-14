@@ -1,0 +1,13 @@
+C:\Users\Prog01\source\repos\MonitorPurchase\MonitorPurchase\bin\Debug\MonitorPurchase.dll
+C:\Users\Prog01\source\repos\MonitorPurchase\MonitorPurchase\bin\Debug\MonitorPurchase.pdb
+C:\Users\Prog01\source\repos\MonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase.csproj.AssemblyReference.cache
+C:\Users\Prog01\source\repos\MonitorPurchase\MonitorPurchase\obj\Debug\MonitorControl.g.cs
+C:\Users\Prog01\source\repos\MonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase_MarkupCompile.cache
+C:\Users\Prog01\source\repos\MonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase_MarkupCompile.lref
+C:\Users\Prog01\source\repos\MonitorPurchase\MonitorPurchase\obj\Debug\MonitorControl.baml
+C:\Users\Prog01\source\repos\MonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase.g.resources
+C:\Users\Prog01\source\repos\MonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase.Properties.Resources.resources
+C:\Users\Prog01\source\repos\MonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase.csproj.GenerateResource.cache
+C:\Users\Prog01\source\repos\MonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase.csproj.CoreCompileInputs.cache
+C:\Users\Prog01\source\repos\MonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase.dll
+C:\Users\Prog01\source\repos\MonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase.pdb

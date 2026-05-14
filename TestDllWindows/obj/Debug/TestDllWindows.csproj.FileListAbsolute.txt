@@ -1,0 +1,13 @@
+C:\Users\Prog01\source\repos\MonitorPurchase\TestDllWindows\bin\Debug\TestDllWindows.exe
+C:\Users\Prog01\source\repos\MonitorPurchase\TestDllWindows\bin\Debug\TestDllWindows.pdb
+C:\Users\Prog01\source\repos\MonitorPurchase\TestDllWindows\bin\Debug\MonitorPurchase.WinForms.dll
+C:\Users\Prog01\source\repos\MonitorPurchase\TestDllWindows\bin\Debug\MonitorPurchase.dll
+C:\Users\Prog01\source\repos\MonitorPurchase\TestDllWindows\bin\Debug\MonitorPurchase.WinForms.pdb
+C:\Users\Prog01\source\repos\MonitorPurchase\TestDllWindows\bin\Debug\MonitorPurchase.pdb
+C:\Users\Prog01\source\repos\MonitorPurchase\TestDllWindows\obj\Debug\TestDllWindows.csproj.AssemblyReference.cache
+C:\Users\Prog01\source\repos\MonitorPurchase\TestDllWindows\obj\Debug\TestDllWindows.Properties.Resources.resources
+C:\Users\Prog01\source\repos\MonitorPurchase\TestDllWindows\obj\Debug\TestDllWindows.csproj.GenerateResource.cache
+C:\Users\Prog01\source\repos\MonitorPurchase\TestDllWindows\obj\Debug\TestDllWindows.csproj.CoreCompileInputs.cache
+C:\Users\Prog01\source\repos\MonitorPurchase\TestDllWindows\obj\Debug\TestDllW.E78425B9.Up2Date
+C:\Users\Prog01\source\repos\MonitorPurchase\TestDllWindows\obj\Debug\TestDllWindows.exe
+C:\Users\Prog01\source\repos\MonitorPurchase\TestDllWindows\obj\Debug\TestDllWindows.pdb
