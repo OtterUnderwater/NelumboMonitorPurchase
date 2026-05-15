@@ -21,7 +21,9 @@ namespace MonitorPurchase
         private UserControl tbl = null;
         private DataTable dtOrders = null;
         private DataTable dtData = null;
+        private DataTable dtDetailData = null;
         private CancellationTokenSource _cancellationTokenSource;
+        private CancellationTokenSource _detailCancellationTokenSource;
 
         public MonitorControl(Hashtable inp)
         {
@@ -104,6 +106,9 @@ namespace MonitorPurchase
                 {
                     LoadSuppliers();
                     ApplyFilters();
+                    // Очищаем детали при загрузке новых данных
+                    gridDetailData.ItemsSource = null;
+                    dtDetailData = null;
                 });
             }
             catch (OperationCanceledException) { }
@@ -114,6 +119,57 @@ namespace MonitorPurchase
             finally
             {
                 Mouse.OverrideCursor = null;
+            }
+        }
+
+        private async void LoadDetailData(int itemID, string clientOrderID = null)
+        {
+            _detailCancellationTokenSource?.Cancel();
+            _detailCancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = _detailCancellationTokenSource.Token;
+
+            try
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    gridDetailData.ItemsSource = null;
+                });
+
+                var result = await Task.Run(() =>
+                {
+                    if (cancellationToken.IsCancellationRequested) return null;
+                    DbCmd cmd = new DbCmd(CString, "crm.ext_SupplyMonitor");
+                    cmd.Parameters.AddWithValue("ActionID", 3);
+                    cmd.Parameters.AddWithValue("ItemID", itemID);
+                    if (!string.IsNullOrEmpty(clientOrderID))
+                        cmd.Parameters.AddWithValue("ClientOrderID", clientOrderID);
+                    return cmd.ExecuteDataSet();
+                }, cancellationToken);
+
+                if (result == null || cancellationToken.IsCancellationRequested) return;
+
+                dtDetailData = result.Tables[0];
+
+                Dispatcher.Invoke(() =>
+                {
+                    if (dtDetailData != null && dtDetailData.Rows.Count > 0)
+                    {
+                        gridDetailData.ItemsSource = dtDetailData.DefaultView;
+                    }
+                    else
+                    {
+                        gridDetailData.ItemsSource = null;
+                        // Можно показать сообщение, что данных нет
+                    }
+                });
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception error)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    Common.MsgBox("Ошибка при загрузке деталей!", error);
+                });
             }
         }
 
@@ -175,11 +231,25 @@ namespace MonitorPurchase
         }
 
         private void IsDeficitOnly_Changed(object sender, RoutedEventArgs e) => LoadData();
-        private void gridOrders_SelectionChanged(object sender, EventArgs e) => LoadData();
-        private void Filter_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();
-        private void Supplier_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e) => ApplyFilters();
-        private async void btnRefresh_Click(object sender, RoutedEventArgs e) { await LoadOrdersAsync(); LoadData(); }
 
+        private void gridOrders_SelectionChanged(object sender, EventArgs e)
+        {
+            LoadData();
+            // Очищаем детали при смене заказа
+            gridDetailData.ItemsSource = null;
+            dtDetailData = null;
+        }
+
+        private void Filter_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();
+
+        private void Supplier_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyFilters();
+
+        private async void btnRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            await LoadOrdersAsync();
+            LoadData();
+        }
+        
         private void btnSelectAll_Click(object sender, RoutedEventArgs e)
         {
             if (gridData.ItemsSource is DataView dv)
@@ -192,20 +262,44 @@ namespace MonitorPurchase
                 foreach (DataRowView row in dv) row["IsSelected"] = false;
         }
 
-        private void gridData_CurrentCellChanged(object sender, EventArgs e)
+        private async void gridData_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var row = gridData.SelectedItem as DataRowView;
             if (row != null)
             {
+                // Обновляем метку с информацией о выбранном элементе
                 lblItem.Text = $"{row["ItemCode"]}  {row["ItemName"]}  {row["ItemSymbol"]}";
+
+                // Загружаем детали для выбранного элемента
+                if (row["ItemID"] != DBNull.Value)
+                {
+                    int itemID = Convert.ToInt32(row["ItemID"]);
+                    string clientOrderID = null;
+
+                    var selectedOrder = gridOrders.SelectedItem as DataRowView;
+                    if (selectedOrder?["ClientOrderID"] != DBNull.Value)
+                        clientOrderID = selectedOrder["ClientOrderID"].ToString();
+
+                    // Асинхронно загружаем детали
+                    LoadDetailData(itemID, clientOrderID);
+                }
+
+                // Дополнительная логика для tbl если нужно
                 if (tbl != null && !IsDebug && row["ItemID"] != DBNull.Value)
                 {
                     var inp = new Hashtable { ["ItemID"] = row["ItemID"] };
                     var selectedOrder = gridOrders.SelectedItem as DataRowView;
                     if (selectedOrder?["ClientOrderID"] != DBNull.Value)
                         inp["ClientOrderID"] = selectedOrder["ClientOrderID"];
-                   // tbl.ShowData(inp); 
+                    // tbl.ShowData(inp); 
                 }
+            }
+            else
+            {
+                // Если ничего не выбрано, очищаем детали
+                lblItem.Text = string.Empty;
+                gridDetailData.ItemsSource = null;
+                dtDetailData = null;
             }
         }
 

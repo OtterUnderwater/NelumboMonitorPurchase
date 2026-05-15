@@ -41,6 +41,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"/>
                 <RowDefinition Height="0.6*"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="0.4*"/>
             </Grid.RowDefinitions>
 
@@ -74,9 +75,22 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <!-- DataGrid для данных -->
+            <!-- Таблица -->       
             <DataGrid x:Name="gridData" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="False"
-                      SelectionMode="Single" CurrentCellChanged="gridData_CurrentCellChanged">
+                      SelectionMode="Single" SelectionChanged="gridData_SelectionChanged">
+                <DataGrid.Resources>
+                    <ContextMenu x:Key="RowContextMenu">
+                        <MenuItem Header="Выбрать все" Click="btnSelectAll_Click"/>
+                        <MenuItem Header="Сбросить все" Click="btnResetAll_Click"/>
+                        <Separator/>
+                        <MenuItem Header="Создать заказы" Click="btnCreateOrders_Click"/>
+                    </ContextMenu>
+                </DataGrid.Resources>
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                        <Setter Property="ContextMenu" Value="{StaticResource RowContextMenu}"/>
+                    </Style>
+                </DataGrid.RowStyle>
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Артикул" Binding="{Binding ItemCode}"/>
                     <DataGridTextColumn Header="Наименование" Binding="{Binding ItemName}" ElementStyle="{StaticResource WrapText}"/>
@@ -97,22 +111,28 @@
                     <DataGridCheckBoxColumn Header="" Binding="{Binding IsSelected}" />
                 </DataGrid.Columns>
             </DataGrid>
-
-            <!-- Нижняя панель -->
-            <Grid Grid.Row="2" Margin="5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock x:Name="lblItem" Grid.Column="0" VerticalAlignment="Center" 
-           TextDecorations="Underline" Cursor="Hand" MouseLeftButtonDown="lblItem_MouseLeftButtonDown"/>
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button x:Name="btnSelectAll" Content="Выбрать все" Width="100" Margin="5" Click="btnSelectAll_Click"/>
-                    <Button x:Name="btnResetAll" Content="Сбросить все" Width="100" Margin="5" Click="btnResetAll_Click"/>
-                    <Button x:Name="btnCreateOrders" Content="Создать заказы" Width="120" Margin="5" 
-            Background="LightGreen" Click="btnCreateOrders_Click"/>
-                </StackPanel>
-            </Grid>
+           
+            <!-- Выбранный элемент -->
+            <TextBlock Grid.Row="2" Margin="5" x:Name="lblItem" FontWeight="Bold"
+                       HorizontalAlignment="Center" Cursor="Hand" Foreground="Blue"
+                       MouseLeftButtonDown="lblItem_MouseLeftButtonDown"/>
+          
+            <!-- Содержимое элемента -->
+            <DataGrid x:Name="gridDetailData" Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Заказ клиента" Binding="{Binding ClientOrder}"/>
+                    <DataGridTextColumn Header="Описание" Binding="{Binding ClientOrderNote}" ElementStyle="{StaticResource WrapText}"/>
+                    <DataGridTextColumn Header="Срок" Binding="{Binding ToDate, StringFormat='dd.MM.yy'}"/>
+                    <DataGridTextColumn Header="Брутто" Binding="{Binding DemandQty, StringFormat=F3}"/>
+                    <DataGridTextColumn Header="ЕИ" Binding="{Binding MeasureName}"/>
+                    <DataGridTextColumn Header="Детально" Binding="{Binding Notes}" ElementStyle="{StaticResource WrapText}"/>
+                    <DataGridTextColumn Header="Дефицит" Binding="{Binding DeficitQty, StringFormat=F3}"/>
+                    <DataGridTextColumn Header="ТК" Binding="{Binding RequestQty, StringFormat=F3}"/>
+                    <DataGridTextColumn Header="Резерв" Binding="{Binding FixQty, StringFormat=F3}"/>
+                    <DataGridTextColumn Header="Выдано" Binding="{Binding OutQty, StringFormat=F3}"/>
+                    <DataGridTextColumn Header="Требования" Binding="{Binding RequestName}"/>
+                </DataGrid.Columns>
+            </DataGrid>
         </Grid>
     </Grid>
 </UserControl>
