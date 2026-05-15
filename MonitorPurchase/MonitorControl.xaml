@@ -1,86 +1,118 @@
 ﻿<UserControl x:Class="MonitorPurchase.MonitorControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid Margin="5">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="0.4*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="0.6*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    
+    <Grid Margin="5" Background="LightGray">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-        <!-- Фильтр заказов -->
-        <Border Grid.Row="0" Margin="5" Padding="5" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="5">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Заказ:" VerticalAlignment="Center" Margin="5,0"/>
-                <TextBox x:Name="txtOrderFilter" Width="200" TextChanged="OrderFilter_TextChanged"/>
+        <!-- Столбец заказов -->
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <StackPanel Grid.Row="0" Width="150" Margin="5" VerticalAlignment="Bottom">
+                <TextBlock Text="Заказ:" FontWeight="Bold" Margin="0,0,0,3"/>
+                <TextBox x:Name="txtOrderFilter" TextChanged="OrderFilter_TextChanged"/>
             </StackPanel>
-        </Border>
 
-        <!-- DataGrid для заказов -->
-        <DataGrid x:Name="gridOrders" Grid.Row="1" Margin="5"
-                  AutoGenerateColumns="True"
-                  IsReadOnly="True"
-                  SelectionMode="Single"
-                  EnableRowVirtualization="True"
-                  EnableColumnVirtualization="True"
-                  VirtualizingPanel.ScrollUnit="Pixel"
-                  RowHeight="25"
-                  ScrollViewer.IsDeferredScrollingEnabled="True"
-                  SelectionChanged="gridOrders_SelectionChanged"/>
+            <DataGrid x:Name="gridOrders" Grid.Row="1" AutoGenerateColumns="False" Width="150"
+                      IsReadOnly="True" SelectionMode="Single" SelectionChanged="gridOrders_SelectionChanged">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Заказ" Binding="{Binding DocNumber}" Width="*" ElementStyle="{StaticResource WrapText}"/>
+                    <DataGridTextColumn Header="Срок" Binding="{Binding DocDate, StringFormat='dd.MM.yy'}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
 
-        <!-- Панель фильтров -->
-        <Border Grid.Row="2" Margin="5" Padding="5" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="5">
-            <StackPanel>
-                <WrapPanel Margin="0,0,0,5">
-                    <CheckBox x:Name="chkIsDeficitOnly" Content="Только дефицит" Margin="5,0" 
-                              Checked="IsDeficitOnly_Changed" Unchecked="IsDeficitOnly_Changed"/>
-                    <TextBlock Text="Код:" VerticalAlignment="Center" Margin="5,0"/>
-                    <TextBox x:Name="txtCodeFilter" Width="100" TextChanged="Filter_TextChanged"/>
-                    <TextBlock Text="Наименование:" VerticalAlignment="Center" Margin="5,0"/>
-                    <TextBox x:Name="txtNameFilter" Width="150" TextChanged="Filter_TextChanged"/>
-                    <TextBlock Text="Символ:" VerticalAlignment="Center" Margin="5,0"/>
-                    <TextBox x:Name="txtSymbolFilter" Width="100" TextChanged="Filter_TextChanged"/>
-                </WrapPanel>
-                <WrapPanel>
-                    <TextBlock Text="Поставщик:" VerticalAlignment="Center" Margin="5,0"/>
-                    <ComboBox x:Name="cmbSupplier" Width="200" SelectionChanged="Supplier_SelectionChanged"/>
-                    <TextBlock Text="Склад:" VerticalAlignment="Center" Margin="5,0"/>
-                    <TextBox x:Name="txtWrhFilter" Width="150" TextChanged="Filter_TextChanged"/>
-                    <Button x:Name="btnRefresh" Content="Обновить" Width="100" Margin="20,0" Click="btnRefresh_Click"/>
-                </WrapPanel>
-            </StackPanel>
-        </Border>
+        <!-- Основная часть -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="0.6*"/>
+                <RowDefinition Height="0.4*"/>
+            </Grid.RowDefinitions>
 
-        <!-- DataGrid для данных -->
-        <DataGrid x:Name="gridData" Grid.Row="3" Margin="5"
-                  AutoGenerateColumns="True"
-                  IsReadOnly="False"
-                  SelectionMode="Single"
-                  EnableRowVirtualization="True"
-                  EnableColumnVirtualization="True"
-                  VirtualizingPanel.ScrollUnit="Pixel"
-                  RowHeight="25"
-                  ScrollViewer.IsDeferredScrollingEnabled="True"
-                  CurrentCellChanged="gridData_CurrentCellChanged"/>
+            <!-- Панель фильтров -->
+            <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <StackPanel Orientation="Horizontal" Margin="5" VerticalAlignment="Bottom">
+                    <StackPanel Width="100" VerticalAlignment="Bottom">
+                        <TextBlock Text="Артикул:" FontWeight="Bold" Margin="0,0,0,3"/>
+                        <TextBox x:Name="txtCodeFilter" TextChanged="Filter_TextChanged"/>
+                    </StackPanel>
+                    <StackPanel Width="150" VerticalAlignment="Bottom">
+                        <TextBlock Text="Наименование:" FontWeight="Bold" Margin="0,0,0,3"/>
+                        <TextBox x:Name="txtNameFilter" TextChanged="Filter_TextChanged"/>
+                    </StackPanel>
+                    <StackPanel Width="100" VerticalAlignment="Bottom">
+                        <TextBlock Text="Обозначение:" FontWeight="Bold" Margin="0,0,0,3"/>
+                        <TextBox x:Name="txtSymbolFilter" TextChanged="Filter_TextChanged"/>
+                    </StackPanel>
+                    <StackPanel Width="200" Margin="5,0" VerticalAlignment="Bottom">
+                        <TextBlock Text="Основной поставщик:" FontWeight="Bold" Margin="0,0,0,3"/>
+                        <ComboBox x:Name="cmbSupplier" SelectionChanged="Supplier_SelectionChanged"/>
+                    </StackPanel>
+                    <StackPanel Width="100" Margin="5,0" VerticalAlignment="Bottom">
+                        <TextBlock Text="Склад:" FontWeight="Bold" Margin="0,0,0,3"/>
+                        <TextBox x:Name="txtWrhFilter" TextChanged="Filter_TextChanged"/>
+                    </StackPanel>
+                    <CheckBox x:Name="chkIsDeficitOnly" Content="Только дефицит" Margin="5,0,10,0" 
+                              Checked="IsDeficitOnly_Changed" Unchecked="IsDeficitOnly_Changed"
+                              VerticalAlignment="Bottom"/>
+                    <Button x:Name="btnRefresh" Content="Обновить" Width="100" Click="btnRefresh_Click"/>
+                </StackPanel>
+            </ScrollViewer>
 
-        <!-- Нижняя панель -->
-        <Border Grid.Row="4" Margin="5" Padding="5" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="5">
-            <Grid>
+            <!-- DataGrid для данных -->
+            <DataGrid x:Name="gridData" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="False"
+                      SelectionMode="Single" CurrentCellChanged="gridData_CurrentCellChanged">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Артикул" Binding="{Binding ItemCode}"/>
+                    <DataGridTextColumn Header="Наименование" Binding="{Binding ItemName}" ElementStyle="{StaticResource WrapText}"/>
+                    <DataGridTextColumn Header="Обозначение" Binding="{Binding ItemSymbol}"/>
+                    <DataGridTextColumn Header="ЕИ" Binding="{Binding MeasureName}"/>
+                    <DataGridTextColumn Header="Клв Зак" Binding="{Binding ClientOrderCount}"/>
+                    <DataGridTextColumn Header="Брутто" Binding="{Binding DemandQty, StringFormat=F3}"/>
+                    <DataGridTextColumn Header="Выдано" Binding="{Binding OutQty, StringFormat=F3}"/>
+                    <DataGridTextColumn Header="Резерв" Binding="{Binding FixQity, StringFormat=F3}"/>
+                    <DataGridTextColumn Header="Нетто" Binding="{Binding NetQty, StringFormat=F3}"/>
+                    <DataGridTextColumn Header="Остаток" Binding="{Binding RestQty, StringFormat=F3}"/>
+                    <DataGridTextColumn Header="По складам" Binding="{Binding RestString}"/>
+                    <DataGridTextColumn Header="Мин. ост" Binding="{Binding MinRest, StringFormat=F3}"/>
+                    <DataGridTextColumn Header="Закупка" Binding="{Binding NotReceivedQty, StringFormat=F3}"/>
+                    <DataGridTextColumn Header="К закупке" Binding="{Binding ToSupply, StringFormat=F3}"/>
+                    <DataGridTextColumn Header="Поставщик" Binding="{Binding ClientName}"/>
+                    <DataGridTextColumn Header="СХ" Binding="{Binding WrhName}"/>
+                    <DataGridCheckBoxColumn Header="" Binding="{Binding IsSelected}" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- Нижняя панель -->
+            <Grid Grid.Row="2" Margin="5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="lblItem" Grid.Column="0" VerticalAlignment="Center" 
-                           TextDecorations="Underline" Cursor="Hand" MouseLeftButtonDown="lblItem_MouseLeftButtonDown"/>
+           TextDecorations="Underline" Cursor="Hand" MouseLeftButtonDown="lblItem_MouseLeftButtonDown"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button x:Name="btnSelectAll" Content="Выбрать все" Width="100" Margin="5" Click="btnSelectAll_Click"/>
                     <Button x:Name="btnResetAll" Content="Сбросить все" Width="100" Margin="5" Click="btnResetAll_Click"/>
                     <Button x:Name="btnCreateOrders" Content="Создать заказы" Width="120" Margin="5" 
-                            Background="LightGreen" Click="btnCreateOrders_Click"/>
+            Background="LightGreen" Click="btnCreateOrders_Click"/>
                 </StackPanel>
             </Grid>
-        </Border>
+        </Grid>
     </Grid>
 </UserControl>

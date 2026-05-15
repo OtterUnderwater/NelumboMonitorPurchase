@@ -41,3 +41,4 @@ C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Sy
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Syncfusion.Data.WPF.xml
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Syncfusion.SfGrid.WPF.xml
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Syncfusion.SfInput.WPF.xml
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\obj\Debug\Styles.baml

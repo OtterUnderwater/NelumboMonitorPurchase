@@ -204,7 +204,7 @@ namespace MonitorPurchase
                     var selectedOrder = gridOrders.SelectedItem as DataRowView;
                     if (selectedOrder?["ClientOrderID"] != DBNull.Value)
                         inp["ClientOrderID"] = selectedOrder["ClientOrderID"];
-                    // tbl.ShowData(inp); если нужно
+                   // tbl.ShowData(inp); 
                 }
             }
         }
