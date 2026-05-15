@@ -14,7 +14,6 @@ C:\Users\Prog01\source\repos\MonitorPurchase\MonitorPurchase\obj\Debug\MonitorPu
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase.csproj.AssemblyReference.cache
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\obj\Debug\MonitorControl.g.cs
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase_MarkupCompile.cache
-C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase_MarkupCompile.lref
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase.dll
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase.pdb
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\MonitorPurchase.dll.config
@@ -36,3 +35,9 @@ C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\obj\Debug\Mo
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase.csproj.GenerateResource.cache
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase.csproj.CoreCompileInputs.cache
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\obj\Debug\MonitorP.65EAE5AC.Up2Date
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Syncfusion.Data.WPF.dll
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Syncfusion.SfGrid.WPF.dll
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Syncfusion.SfInput.WPF.dll
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Syncfusion.Data.WPF.xml
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Syncfusion.SfGrid.WPF.xml
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Syncfusion.SfInput.WPF.xml

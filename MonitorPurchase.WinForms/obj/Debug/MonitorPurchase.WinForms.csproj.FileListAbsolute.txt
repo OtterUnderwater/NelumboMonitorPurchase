@@ -18,13 +18,6 @@ C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\obj
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\obj\Debug\MonitorPurchase.WinForms.pdb
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\MonitorPurchase.WinForms.dll.config
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\MettaFramework.dll
-C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\Syncfusion.PropertyGrid.Wpf.dll
-C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\Syncfusion.Shared.Wpf.dll
-C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\Syncfusion.Licensing.dll
-C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\Syncfusion.Tools.Wpf.dll
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\stdole.dll
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\MonitorPurchase.dll.config
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\MettaFramework.pdb
-C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\Syncfusion.PropertyGrid.Wpf.xml
-C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\Syncfusion.Shared.Wpf.xml
-C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\Syncfusion.Tools.Wpf.xml

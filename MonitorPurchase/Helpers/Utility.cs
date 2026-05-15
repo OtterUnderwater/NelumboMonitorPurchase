@@ -1,5 +1,4 @@
 ﻿using MettaFramework.Classes;
-using Syncfusion.Windows.PropertyGrid;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -374,24 +373,49 @@ namespace MonitorPurchase.Helpers
 
         public static UserControl GetPropGrid(Guid MOID, Actions mode, Hashtable inp)
         {
-            // WPF версия PropertyGrid
             var userControl = new UserControl();
 
             try
             {
-                // Используем встроенный PropertyGrid из WPF
-                var propertyGrid = new PropertyGrid();
-                userControl.Content = propertyGrid;
-            }
-            catch
-            {
-                var textBlock = new TextBlock
+                // Создаём простую панель для отображения свойств
+                var stackPanel = new StackPanel { Margin = new Thickness(10) };
+                stackPanel.Children.Add(new TextBlock
                 {
-                    Text = "Property Grid (требуется сборка System.Windows.Controls.PropertyGrid)",
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
+                    Text = "Панель свойств",
+                    FontWeight = FontWeights.Bold,
+                    Margin = new Thickness(0, 0, 0, 10)
+                });
+                stackPanel.Children.Add(new TextBlock { Text = $"MOID: {MOID}" });
+                stackPanel.Children.Add(new TextBlock { Text = $"Mode: {mode}" });
+
+                if (inp != null && inp.Count > 0)
+                {
+                    stackPanel.Children.Add(new TextBlock
+                    {
+                        Text = "Параметры:",
+                        FontWeight = FontWeights.Bold,
+                        Margin = new Thickness(0, 10, 0, 5)
+                    });
+                    foreach (DictionaryEntry entry in inp)
+                    {
+                        stackPanel.Children.Add(new TextBlock
+                        {
+                            Text = $"{entry.Key}: {entry.Value}",
+                            Margin = new Thickness(15, 0, 0, 0)
+                        });
+                    }
+                }
+
+                var scrollViewer = new ScrollViewer { Content = stackPanel };
+                userControl.Content = scrollViewer;
+            }
+            catch (Exception error)
+            {
+                userControl.Content = new TextBlock
+                {
+                    Text = $"Ошибка создания PropertyGrid: {error.Message}",
+                    Foreground = System.Windows.Media.Brushes.Red
                 };
-                userControl.Content = textBlock;
             }
 
             return userControl;
