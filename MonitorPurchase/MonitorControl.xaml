@@ -8,7 +8,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    
+
     <Grid Margin="5" Background="LightGray">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
@@ -21,16 +21,20 @@
                 <RowDefinition Height="50"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            
+
             <StackPanel Grid.Row="0" Width="150" Margin="5" VerticalAlignment="Bottom">
                 <TextBlock Text="Заказ:" FontWeight="Bold" Margin="0,0,0,3"/>
                 <TextBox x:Name="txtOrderFilter" TextChanged="OrderFilter_TextChanged"/>
             </StackPanel>
 
             <DataGrid x:Name="gridOrders" Grid.Row="1" AutoGenerateColumns="False" Width="150"
-                      IsReadOnly="True" SelectionMode="Single" SelectionChanged="gridOrders_SelectionChanged">
+                      IsReadOnly="True" SelectionMode="Single" SelectionChanged="gridOrders_SelectionChanged"
+                      VirtualizingPanel.ScrollUnit="Pixel"
+                      VirtualizingPanel.VirtualizationMode="Recycling"
+                      EnableColumnVirtualization="True">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Заказ" Binding="{Binding DocNumber}" Width="*" ElementStyle="{StaticResource WrapText}"/>
+                    <DataGridTextColumn Header="Заказ" Binding="{Binding DocNumber}" Width="*" 
+                                        ElementStyle="{StaticResource WrapText}"/>
                     <DataGridTextColumn Header="Срок" Binding="{Binding DocDate, StringFormat='dd.MM.yy'}"/>
                 </DataGrid.Columns>
             </DataGrid>
@@ -75,22 +79,40 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <!-- Таблица -->       
+            <!-- Таблица -->
             <DataGrid x:Name="gridData" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="False"
-                      SelectionMode="Single" SelectionChanged="gridData_SelectionChanged">
+                      SelectionMode="Single" SelectionChanged="gridData_SelectionChanged"
+                      VirtualizingPanel.ScrollUnit="Pixel"
+                      VirtualizingPanel.VirtualizationMode="Recycling"
+                      EnableColumnVirtualization="True"
+                      EnableRowVirtualization="True"
+                      ScrollViewer.IsDeferredScrollingEnabled="False"
+                      VirtualizingPanel.CacheLength="2,2">
+
                 <DataGrid.Resources>
                     <ContextMenu x:Key="RowContextMenu">
                         <MenuItem Header="Выбрать все" Click="btnSelectAll_Click"/>
                         <MenuItem Header="Сбросить все" Click="btnResetAll_Click"/>
                         <Separator/>
+                        <MenuItem Header="Сменить основного поставщика" Click="btnChangeMainSupplier_Click"/>
                         <MenuItem Header="Создать заказы" Click="btnCreateOrders_Click"/>
                     </ContextMenu>
                 </DataGrid.Resources>
+
                 <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                    <Style TargetType="DataGridRow">
                         <Setter Property="ContextMenu" Value="{StaticResource RowContextMenu}"/>
+                        <Style.Triggers>
+                            <Trigger Property="ItemsControl.AlternationIndex" Value="0">
+                                <Setter Property="Background" Value="White" />
+                            </Trigger>
+                            <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                                <Setter Property="Background" Value="#E6F2FF" />
+                            </Trigger>
+                        </Style.Triggers>
                     </Style>
                 </DataGrid.RowStyle>
+
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Артикул" Binding="{Binding ItemCode}"/>
                     <DataGridTextColumn Header="Наименование" Binding="{Binding ItemName}" ElementStyle="{StaticResource WrapText}"/>
@@ -111,21 +133,26 @@
                     <DataGridCheckBoxColumn Header="" Binding="{Binding IsSelected}" />
                 </DataGrid.Columns>
             </DataGrid>
-           
+
             <!-- Выбранный элемент -->
             <TextBlock Grid.Row="2" Margin="5" x:Name="lblItem" FontWeight="Bold"
                        HorizontalAlignment="Center" Cursor="Hand" Foreground="Blue"
                        MouseLeftButtonDown="lblItem_MouseLeftButtonDown"/>
-          
+
             <!-- Содержимое элемента -->
-            <DataGrid x:Name="gridDetailData" Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid x:Name="gridDetailData" Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True"
+                      VirtualizingPanel.ScrollUnit="Pixel"
+                      VirtualizingPanel.VirtualizationMode="Recycling"
+                      EnableRowVirtualization="True">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Заказ клиента" Binding="{Binding ClientOrder}"/>
-                    <DataGridTextColumn Header="Описание" Binding="{Binding ClientOrderNote}" ElementStyle="{StaticResource WrapText}"/>
+                    <DataGridTextColumn Header="Описание" Binding="{Binding ClientOrderNote}" 
+                                        ElementStyle="{StaticResource WrapText}"/>
                     <DataGridTextColumn Header="Срок" Binding="{Binding ToDate, StringFormat='dd.MM.yy'}"/>
                     <DataGridTextColumn Header="Брутто" Binding="{Binding DemandQty, StringFormat=F3}"/>
                     <DataGridTextColumn Header="ЕИ" Binding="{Binding MeasureName}"/>
-                    <DataGridTextColumn Header="Детально" Binding="{Binding Notes}" ElementStyle="{StaticResource WrapText}"/>
+                    <DataGridTextColumn Header="Детально" Binding="{Binding Notes}" 
+                                        ElementStyle="{StaticResource WrapText}"/>
                     <DataGridTextColumn Header="Дефицит" Binding="{Binding DeficitQty, StringFormat=F3}"/>
                     <DataGridTextColumn Header="ТК" Binding="{Binding RequestQty, StringFormat=F3}"/>
                     <DataGridTextColumn Header="Резерв" Binding="{Binding FixQty, StringFormat=F3}"/>

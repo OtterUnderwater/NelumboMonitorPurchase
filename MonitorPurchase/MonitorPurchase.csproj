@@ -75,11 +75,17 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\WindowHelper.cs" />
+    <Compile Include="Models\MonitorItem.cs" />
+    <Compile Include="Models\OrderInfo.cs" />
+    <Compile Include="Services\DbService.cs" />
+    <Compile Include="Services\DialogsService.cs" />
     <Page Include="MonitorControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Compile Include="Helpers\Utility.cs" />
+    <Compile Include="Models\SupplierInfo.cs" />
     <Compile Include="MonitorControl.xaml.cs">
       <DependentUpon>MonitorControl.xaml</DependentUpon>
       <SubType>Code</SubType>

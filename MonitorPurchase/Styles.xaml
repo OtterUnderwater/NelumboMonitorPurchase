@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Style TargetType="DataGrid">
+    <Style x:Key="BaseDataGridStyle" TargetType="DataGrid">
         <Setter Property="AlternationCount" Value="2" />
         <Setter Property="RowStyle">
             <Setter.Value>
@@ -28,6 +28,9 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <!-- Неявный стиль для всех DataGrid (будет применяться по умолчанию) -->
+    <Style TargetType="DataGrid" BasedOn="{StaticResource BaseDataGridStyle}"/>
 
     <Style TargetType="{x:Type TextBlock}" x:Key="WrapText">
         <Setter Property="TextWrapping" Value="Wrap"/>

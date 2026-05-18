@@ -1,29 +1,42 @@
 ﻿using MonitorPurchase.Helpers;
+using MonitorPurchase.Services;
+using MettaFramework.Classes;
 using System;
 using System.Collections;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Threading.Tasks;
-using MettaFramework.Classes;
-using System.Threading;
+using MonitorPurchase.Models;
+using System.Collections.Generic;
+using System.Windows.Media;
 
 namespace MonitorPurchase
 {
     public partial class MonitorControl : UserControl
     {
-        private string CString;
-        private int RegID;
-        private bool IsDebug = false;
+        #region [Переменные и свойства]
+        private readonly string CString;
+        private readonly int RegID;
+        private readonly bool IsDebug = false;
+        private readonly DbService _dbService;
+        private readonly DialogsService _dialogsService;
         private UserControl tbl = null;
         private DataTable dtOrders = null;
         private DataTable dtData = null;
         private DataTable dtDetailData = null;
         private CancellationTokenSource _cancellationTokenSource;
         private CancellationTokenSource _detailCancellationTokenSource;
+        private void IsDeficitOnly_Changed(object sender, RoutedEventArgs e) => LoadData();
+        private void gridOrders_SelectionChanged(object sender, EventArgs e) { LoadData(); ClearDetails(); ResetScroll(); }
+        private void Filter_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();
+        private void Supplier_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyFilters();
+        private async void btnRefresh_Click(object sender, RoutedEventArgs e) { await LoadOrdersAsync(); LoadData(); }
+        #endregion
 
         public MonitorControl(Hashtable inp)
         {
@@ -31,6 +44,9 @@ namespace MonitorPurchase
             CString = inp["ConnectionString"].ToString();
             RegID = (int)inp["RegID"];
             if (inp.ContainsKey("IsDebug")) IsDebug = true;
+
+            _dbService = new DbService(CString, RegID);
+            _dialogsService = new DialogsService();
             Loaded += SupplyMonitor_Window_Loaded;
         }
 
@@ -40,10 +56,9 @@ namespace MonitorPurchase
             {
                 if (!IsDebug)
                 {
-                    Hashtable inp = new Hashtable();
+                    var inp = new Hashtable();
                     tbl = Utility.GetTablePanel(new Guid("d6940d10-3d4f-4393-b0ad-6df4add7f715"), inp);
                 }
-
                 await LoadOrdersAsync();
             }
             catch (Exception error)
@@ -57,14 +72,9 @@ namespace MonitorPurchase
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var result = await Task.Run(() =>
-                {
-                    DbCmd cmd = new DbCmd(CString, "crm.ext_SupplyMonitor");
-                    cmd.Parameters.AddWithValue("ActionID", 1);
-                    return cmd.ExecuteDataSet();
-                });
-                dtOrders = result.Tables[0];
-                Dispatcher.Invoke(() => gridOrders.ItemsSource = dtOrders.DefaultView);
+                var result = await _dbService.LoadOrdersAsync();
+                dtOrders = result?.Tables[0];
+                Dispatcher.Invoke(() => gridOrders.ItemsSource = dtOrders?.DefaultView);
             }
             catch (Exception error)
             {
@@ -89,26 +99,15 @@ namespace MonitorPurchase
                 var orderID = selectedOrder?["ClientOrderID"] != DBNull.Value ? selectedOrder["ClientOrderID"]?.ToString() : null;
                 var isDeficitOnly = chkIsDeficitOnly.IsChecked ?? false;
 
-                var result = await Task.Run(() =>
-                {
-                    if (cancellationToken.IsCancellationRequested) return null;
-                    DbCmd cmd = new DbCmd(CString, "crm.ext_SupplyMonitor");
-                    cmd.Parameters.AddWithValue("ActionID", 2);
-                    cmd.Parameters.AddWithValue("IsDeficitOnly", isDeficitOnly);
-                    if (!string.IsNullOrEmpty(orderID)) cmd.Parameters.AddWithValue("ClientOrderID", orderID);
-                    return cmd.ExecuteDataSet();
-                }, cancellationToken);
-
+                var result = await _dbService.LoadDataAsync(orderID, isDeficitOnly, cancellationToken);
                 if (result == null || cancellationToken.IsCancellationRequested) return;
-                dtData = result.Tables[0];
 
+                dtData = result.Tables[0];
                 Dispatcher.Invoke(() =>
                 {
                     LoadSuppliers();
                     ApplyFilters();
-                    // Очищаем детали при загрузке новых данных
-                    gridDetailData.ItemsSource = null;
-                    dtDetailData = null;
+                    ClearDetails();
                 });
             }
             catch (OperationCanceledException) { }
@@ -130,46 +129,20 @@ namespace MonitorPurchase
 
             try
             {
-                Dispatcher.Invoke(() =>
-                {
-                    gridDetailData.ItemsSource = null;
-                });
-
-                var result = await Task.Run(() =>
-                {
-                    if (cancellationToken.IsCancellationRequested) return null;
-                    DbCmd cmd = new DbCmd(CString, "crm.ext_SupplyMonitor");
-                    cmd.Parameters.AddWithValue("ActionID", 3);
-                    cmd.Parameters.AddWithValue("ItemID", itemID);
-                    if (!string.IsNullOrEmpty(clientOrderID))
-                        cmd.Parameters.AddWithValue("ClientOrderID", clientOrderID);
-                    return cmd.ExecuteDataSet();
-                }, cancellationToken);
-
+                Dispatcher.Invoke(() => gridDetailData.ItemsSource = null);
+                var result = await _dbService.LoadDetailDataAsync(itemID, clientOrderID, cancellationToken);
                 if (result == null || cancellationToken.IsCancellationRequested) return;
 
                 dtDetailData = result.Tables[0];
-
                 Dispatcher.Invoke(() =>
                 {
-                    if (dtDetailData != null && dtDetailData.Rows.Count > 0)
-                    {
-                        gridDetailData.ItemsSource = dtDetailData.DefaultView;
-                    }
-                    else
-                    {
-                        gridDetailData.ItemsSource = null;
-                        // Можно показать сообщение, что данных нет
-                    }
+                    gridDetailData.ItemsSource = dtDetailData?.Rows.Count > 0 ? dtDetailData.DefaultView : null;
                 });
             }
             catch (OperationCanceledException) { }
             catch (Exception error)
             {
-                Dispatcher.Invoke(() =>
-                {
-                    Common.MsgBox("Ошибка при загрузке деталей!", error);
-                });
+                Dispatcher.Invoke(() => Common.MsgBox("Ошибка при загрузке деталей!", error));
             }
         }
 
@@ -190,36 +163,44 @@ namespace MonitorPurchase
             if (dtData == null) return;
             try
             {
-                var filter = new StringBuilder();
-                if (!string.IsNullOrEmpty(txtCodeFilter.Text))
-                    filter.Append($"ItemCode like '%{txtCodeFilter.Text}%'");
-                if (!string.IsNullOrEmpty(txtNameFilter.Text))
-                {
-                    if (filter.Length > 0) filter.Append(" AND ");
-                    filter.Append($"ItemName like '%{txtNameFilter.Text}%'");
-                }
-                if (!string.IsNullOrEmpty(txtSymbolFilter.Text))
-                {
-                    if (filter.Length > 0) filter.Append(" AND ");
-                    filter.Append($"ItemSymbol like '%{txtSymbolFilter.Text}%'");
-                }
-                if (cmbSupplier.SelectedValue != null && cmbSupplier.SelectedValue.ToString() != "<Все>")
-                {
-                    if (filter.Length > 0) filter.Append(" AND ");
-                    filter.Append($"ClientName = '{cmbSupplier.SelectedValue}'");
-                }
-                if (!string.IsNullOrEmpty(txtWrhFilter.Text))
-                {
-                    if (filter.Length > 0) filter.Append(" AND ");
-                    filter.Append($"WrhName like '%{txtWrhFilter.Text}%'");
-                }
-
-                DataView dv = string.IsNullOrEmpty(filter.ToString())
+                var filter = BuildFilter();
+                gridData.ItemsSource = string.IsNullOrEmpty(filter)
                     ? dtData.DefaultView
-                    : new DataView(dtData, filter.ToString(), "", DataViewRowState.CurrentRows);
-                gridData.ItemsSource = dv;
+                    : new DataView(dtData, filter, "", DataViewRowState.CurrentRows);
             }
             catch { gridData.ItemsSource = dtData.DefaultView; }
+        }
+
+        private string BuildFilter()
+        {
+            var filter = new StringBuilder();
+            AddFilterCondition(filter, "ItemCode", txtCodeFilter.Text);
+            AddFilterCondition(filter, "ItemName", txtNameFilter.Text);
+            AddFilterCondition(filter, "ItemSymbol", txtSymbolFilter.Text);
+            AddFilterCondition(filter, "WrhName", txtWrhFilter.Text);
+
+            if (cmbSupplier.SelectedValue != null && cmbSupplier.SelectedValue.ToString() != "<Все>")
+            {
+                AddFilterCondition(filter, "ClientName", cmbSupplier.SelectedValue.ToString(), true);
+            }
+
+            return filter.ToString();
+        }
+
+        private void AddFilterCondition(StringBuilder filter, string field, string value, bool exactMatch = false)
+        {
+            if (string.IsNullOrEmpty(value)) return;
+            if (filter.Length > 0) filter.Append(" AND ");
+
+            filter.Append(exactMatch
+                ? $"{field} = '{value}'"
+                : $"{field} like '%{value}%'");
+        }
+
+        private void ClearDetails()
+        {
+            gridDetailData.ItemsSource = null;
+            dtDetailData = null;
         }
 
         private void OrderFilter_TextChanged(object sender, TextChangedEventArgs e)
@@ -230,26 +211,24 @@ namespace MonitorPurchase
                 : new DataView(dtOrders, $"DocNumber like '%{txtOrderFilter.Text}%'", "", DataViewRowState.CurrentRows);
         }
 
-        private void IsDeficitOnly_Changed(object sender, RoutedEventArgs e) => LoadData();
-
-        private void gridOrders_SelectionChanged(object sender, EventArgs e)
+        /// <summary>
+        /// Сбрасывает вертикальный и горизонтальный скролл DataGrid в начало
+        /// </summary>
+        private void ResetScroll()
         {
-            LoadData();
-            // Очищаем детали при смене заказа
-            gridDetailData.ItemsSource = null;
-            dtDetailData = null;
+            if (gridData == null) return;
+
+            var scrollViewer = WindowHelper.FindVisualChild<ScrollViewer>(gridData);
+            if (scrollViewer != null)
+            {
+                scrollViewer.ScrollToTop();
+                scrollViewer.ScrollToLeftEnd();
+            }
+
+            gridData.SelectedItem = null;
+            gridData.UpdateLayout();
         }
 
-        private void Filter_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();
-
-        private void Supplier_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyFilters();
-
-        private async void btnRefresh_Click(object sender, RoutedEventArgs e)
-        {
-            await LoadOrdersAsync();
-            LoadData();
-        }
-        
         private void btnSelectAll_Click(object sender, RoutedEventArgs e)
         {
             if (gridData.ItemsSource is DataView dv)
@@ -267,39 +246,22 @@ namespace MonitorPurchase
             var row = gridData.SelectedItem as DataRowView;
             if (row != null)
             {
-                // Обновляем метку с информацией о выбранном элементе
                 lblItem.Text = $"{row["ItemCode"]}  {row["ItemName"]}  {row["ItemSymbol"]}";
 
-                // Загружаем детали для выбранного элемента
                 if (row["ItemID"] != DBNull.Value)
                 {
-                    int itemID = Convert.ToInt32(row["ItemID"]);
-                    string clientOrderID = null;
-
+                    var itemID = Convert.ToInt32(row["ItemID"]);
                     var selectedOrder = gridOrders.SelectedItem as DataRowView;
-                    if (selectedOrder?["ClientOrderID"] != DBNull.Value)
-                        clientOrderID = selectedOrder["ClientOrderID"].ToString();
-
-                    // Асинхронно загружаем детали
+                    var clientOrderID = selectedOrder?["ClientOrderID"] != DBNull.Value
+                        ? selectedOrder["ClientOrderID"].ToString()
+                        : null;
                     LoadDetailData(itemID, clientOrderID);
-                }
-
-                // Дополнительная логика для tbl если нужно
-                if (tbl != null && !IsDebug && row["ItemID"] != DBNull.Value)
-                {
-                    var inp = new Hashtable { ["ItemID"] = row["ItemID"] };
-                    var selectedOrder = gridOrders.SelectedItem as DataRowView;
-                    if (selectedOrder?["ClientOrderID"] != DBNull.Value)
-                        inp["ClientOrderID"] = selectedOrder["ClientOrderID"];
-                    // tbl.ShowData(inp); 
                 }
             }
             else
             {
-                // Если ничего не выбрано, очищаем детали
                 lblItem.Text = string.Empty;
-                gridDetailData.ItemsSource = null;
-                dtDetailData = null;
+                ClearDetails();
             }
         }
 
@@ -318,60 +280,121 @@ namespace MonitorPurchase
                     MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
 
                 Mouse.OverrideCursor = Cursors.Wait;
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
                     var dv = new DataView(dtData, "IsSelected=1 AND ToSupply > 0", "", DataViewRowState.CurrentRows);
                     var suppliers = dv.ToTable(true, "ClientName");
+                    var selectedOrder = gridOrders.SelectedItem as DataRowView;
+                    var orders = selectedOrder?["ClientOrderID"] != DBNull.Value ? selectedOrder["ClientOrderID"].ToString() : "";
+
                     foreach (DataRow row in suppliers.Rows)
                     {
                         var clientName = row["ClientName"].ToString();
                         if (string.IsNullOrEmpty(clientName)) continue;
-                        int docID = CreateOrder(clientName);
-                        if (docID <= 0) continue;
+
+                        var (docID, result) = await _dbService.CreateOrderAsync(clientName, orders);
+                        if (result != "OK" || docID <= 0) continue;
+
                         var dvRows = new DataView(dtData, $"IsSelected=1 AND ClientName='{clientName}' AND ToSupply>0", "", DataViewRowState.CurrentRows);
                         foreach (DataRowView rowView in dvRows)
                         {
-                            decimal qty = Convert.ToDecimal(rowView["ToSupply"]);
-                            if (qty > 0) AddOrderRow(docID, Convert.ToInt32(rowView["ItemID"]), qty);
+                            var qty = Convert.ToDecimal(rowView["ToSupply"]);
+                            if (qty > 0)
+                                await _dbService.AddOrderRowAsync(docID, Convert.ToInt32(rowView["ItemID"]), qty);
                         }
                     }
                 });
-                MessageBox.Show("Заказы поставщикам созданы (со статусом <Новый>)!", "Внимание", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                MessageBox.Show("Заказы поставщикам созданы (со статусом <Новый>)!", "Внимание",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
                 LoadData();
             }
             catch (Exception error) { Common.MsgBox("Ошибка при создании Заказа поставщику!", error); }
             finally { Mouse.OverrideCursor = null; }
         }
 
-        private int CreateOrder(string clientName)
+        private async void btnChangeMainSupplier_Click(object sender, RoutedEventArgs e)
         {
-            string orders = "";
-            var selectedOrder = gridOrders.SelectedItem as DataRowView;
-            if (selectedOrder?["ClientOrderID"] != DBNull.Value) orders = selectedOrder["ClientOrderID"].ToString();
+            try
+            {
+                var selectedRows = GetSelectedRows();
+                if (selectedRows.Count == 0)
+                {
+                    MessageBox.Show("Не выбрано ни одной позиции!", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
-            DbCmd cmd = new DbCmd(CString, "crm.ext_Metall");
-            cmd.Parameters.AddWithValue("ActionID", 10);
-            cmd.Parameters.AddWithValue("RegID", RegID);
-            cmd.Parameters.AddWithValue("ClientName", clientName);
-            cmd.Parameters.AddWithValue("Orders", orders);
-            cmd.Parameters.AddWithValue("DocTypeID", 1);
-            cmd.Parameters.Add("Result", System.Data.SqlDbType.VarChar, 150).Direction = ParameterDirection.Output;
-            DataSet ds = cmd.ExecuteDataSet();
-            string result = cmd.Parameters["Result"].Value.ToString();
-            if (result != "OK") { MessageBox.Show(result, "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning); return -1; }
-            return Convert.ToInt32(ds.Tables[0].Rows[0]["DocID"]);
+                var newSupplier = await SelectSupplierAsync();
+                if (newSupplier == null) return;
+
+                if (MessageBox.Show($"Сменить основного поставщика на '{newSupplier.ClientName}' для {selectedRows.Count} позиций?",
+                    "Внимание", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+
+                Mouse.OverrideCursor = Cursors.Wait;
+                var selectedOrder = gridOrders.SelectedItem as DataRowView;
+                var clientOrderID = selectedOrder?["ClientOrderID"] != DBNull.Value ? selectedOrder["ClientOrderID"].ToString() : null;
+
+                foreach (var row in selectedRows)
+                {
+                    if (row["ItemID"] != DBNull.Value)
+                    {
+                        var result = await _dbService.ChangeMainSupplierAsync(Convert.ToInt32(row["ItemID"]), newSupplier.ClientID, clientOrderID);
+
+                        if (result != "OK")
+                            throw new Exception($"Ошибка при смене поставщика: {result}");
+                    }
+                }
+
+                MessageBox.Show($"Для {selectedRows.Count} позиций основной поставщик успешно изменен!", "Информация",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                LoadData();
+            }
+            catch (Exception error) { Common.MsgBox("Ошибка при смене основного поставщика!", error); }
+            finally { Mouse.OverrideCursor = null; }
         }
 
-        private void AddOrderRow(int docID, int itemID, decimal qty)
+        private async Task<SupplierInfo> SelectSupplierAsync()
         {
-            DbCmd cmd = new DbCmd(CString, "crm.ext_Metall");
-            cmd.Parameters.AddWithValue("ActionID", 11);
-            cmd.Parameters.AddWithValue("RegID", RegID);
-            cmd.Parameters.AddWithValue("DocID", docID);
-            cmd.Parameters.AddWithValue("ItemID", itemID);
-            cmd.Parameters.AddWithValue("Qty", qty);
-            cmd.Parameters.Add("Result", System.Data.SqlDbType.VarChar, 150).Direction = ParameterDirection.Output;
-            cmd.ExecuteNonQuery();
+            try
+            {
+                var result = await _dbService.GetSuppliersAsync();
+                if (result == null || result.Tables.Count == 0 || result.Tables[0].Rows.Count == 0)
+                {
+                    MessageBox.Show("Список поставщиков пуст!", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return null;
+                }
+
+                var suppliers = new List<SupplierInfo>();
+                foreach (DataRow row in result.Tables[0].Rows)
+                {
+                    suppliers.Add(new SupplierInfo
+                    {
+                        ClientID = Convert.ToInt32(row["ClientID"]),
+                        ClientName = row["ClientName"].ToString()
+                    });
+                }
+
+                SupplierInfo selectedSupplier = null;
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    var owner = WindowHelper.GetOwnerWindow(this);
+                    selectedSupplier = _dialogsService.ShowSupplierSelectionDialog(owner, suppliers);
+                });
+
+                return selectedSupplier;
+            }
+            catch (Exception ex)
+            {
+                Common.MsgBox("Ошибка при загрузке списка поставщиков!", ex);
+                return null;
+            }
+        }
+
+        private List<DataRowView> GetSelectedRows()
+        {
+            return gridData.ItemsSource is DataView dv
+                ? dv.Cast<DataRowView>().Where(row => Convert.ToBoolean(row["IsSelected"])).ToList()
+                : new List<DataRowView>();
         }
     }
 }
