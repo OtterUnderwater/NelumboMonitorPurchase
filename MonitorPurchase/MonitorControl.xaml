@@ -1,11 +1,13 @@
 ﻿<UserControl x:Class="MonitorPurchase.MonitorControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:MonitorPurchase.Converters">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <conv:NumFormatConverter x:Key="NumFormatConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -24,18 +26,20 @@
 
             <StackPanel Grid.Row="0" Width="150" Margin="5" VerticalAlignment="Bottom">
                 <TextBlock Text="Заказ:" FontWeight="Bold" Margin="0,0,0,3"/>
-                <TextBox x:Name="txtOrderFilter" TextChanged="OrderFilter_TextChanged"/>
+                <TextBox x:Name="txtOrderFilter" TextChanged="OrderFilter_TextChanged" Height="18" VerticalAlignment="Bottom"/>
             </StackPanel>
 
             <DataGrid x:Name="gridOrders" Grid.Row="1" AutoGenerateColumns="False" Width="150"
                       IsReadOnly="True" SelectionMode="Single" SelectionChanged="gridOrders_SelectionChanged"
                       VirtualizingPanel.ScrollUnit="Pixel"
                       VirtualizingPanel.VirtualizationMode="Recycling"
-                      EnableColumnVirtualization="True">
+                      EnableColumnVirtualization="True" 
+                      EnableRowVirtualization="True"
+                      HeadersVisibility="Column">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Заказ" Binding="{Binding DocNumber}" Width="*" 
                                         ElementStyle="{StaticResource WrapText}"/>
-                    <DataGridTextColumn Header="Срок" Binding="{Binding DocDate, StringFormat='dd.MM.yy'}"/>
+                    <DataGridTextColumn Header="Срок" Binding="{Binding DocDate, StringFormat='dd.MM.yy'}" MinWidth="50"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
@@ -54,40 +58,41 @@
                 <StackPanel Orientation="Horizontal" Margin="5" VerticalAlignment="Bottom">
                     <StackPanel Width="100" VerticalAlignment="Bottom">
                         <TextBlock Text="Артикул:" FontWeight="Bold" Margin="0,0,0,3"/>
-                        <TextBox x:Name="txtCodeFilter" TextChanged="Filter_TextChanged"/>
+                        <TextBox x:Name="txtCodeFilter" TextChanged="Filter_TextChanged" Height="18" VerticalAlignment="Bottom"/>
                     </StackPanel>
                     <StackPanel Width="150" VerticalAlignment="Bottom">
                         <TextBlock Text="Наименование:" FontWeight="Bold" Margin="0,0,0,3"/>
-                        <TextBox x:Name="txtNameFilter" TextChanged="Filter_TextChanged"/>
+                        <TextBox x:Name="txtNameFilter" TextChanged="Filter_TextChanged" Height="18" VerticalAlignment="Bottom"/>
                     </StackPanel>
                     <StackPanel Width="100" VerticalAlignment="Bottom">
                         <TextBlock Text="Обозначение:" FontWeight="Bold" Margin="0,0,0,3"/>
-                        <TextBox x:Name="txtSymbolFilter" TextChanged="Filter_TextChanged"/>
+                        <TextBox x:Name="txtSymbolFilter" TextChanged="Filter_TextChanged" Height="18" VerticalAlignment="Bottom"/>
                     </StackPanel>
                     <StackPanel Width="200" Margin="5,0" VerticalAlignment="Bottom">
                         <TextBlock Text="Основной поставщик:" FontWeight="Bold" Margin="0,0,0,3"/>
-                        <ComboBox x:Name="cmbSupplier" SelectionChanged="Supplier_SelectionChanged"/>
+                        <ComboBox x:Name="cmbSupplier" SelectionChanged="Supplier_SelectionChanged" Height="18" VerticalAlignment="Bottom"/>
                     </StackPanel>
                     <StackPanel Width="100" Margin="5,0" VerticalAlignment="Bottom">
                         <TextBlock Text="Склад:" FontWeight="Bold" Margin="0,0,0,3"/>
-                        <TextBox x:Name="txtWrhFilter" TextChanged="Filter_TextChanged"/>
+                        <ComboBox x:Name="cmbWrh" SelectionChanged="Supplier_SelectionChanged" Height="18" VerticalAlignment="Bottom"/>
                     </StackPanel>
                     <CheckBox x:Name="chkIsDeficitOnly" Content="Только дефицит" Margin="5,0,10,0" 
                               Checked="IsDeficitOnly_Changed" Unchecked="IsDeficitOnly_Changed"
-                              VerticalAlignment="Bottom"/>
-                    <Button x:Name="btnRefresh" Content="Обновить" Width="100" Click="btnRefresh_Click"/>
+                              VerticalAlignment="Bottom" Height="18" Padding="0"/>
+                    <Button x:Name="btnRefresh" Content="Обновить" Width="100" Click="btnRefresh_Click" Height="18" VerticalAlignment="Bottom"/>
                 </StackPanel>
             </ScrollViewer>
 
             <!-- Таблица -->
-            <DataGrid x:Name="gridData" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="False"
+            <DataGrid x:Name="gridData" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
                       SelectionMode="Single" SelectionChanged="gridData_SelectionChanged"
                       VirtualizingPanel.ScrollUnit="Pixel"
                       VirtualizingPanel.VirtualizationMode="Recycling"
                       EnableColumnVirtualization="True"
                       EnableRowVirtualization="True"
                       ScrollViewer.IsDeferredScrollingEnabled="False"
-                      VirtualizingPanel.CacheLength="2,2">
+                      VirtualizingPanel.CacheLength="2,2"
+                      HeadersVisibility="Column">
 
                 <DataGrid.Resources>
                     <ContextMenu x:Key="RowContextMenu">
@@ -112,25 +117,89 @@
                         </Style.Triggers>
                     </Style>
                 </DataGrid.RowStyle>
-
+                
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Артикул" Binding="{Binding ItemCode}"/>
-                    <DataGridTextColumn Header="Наименование" Binding="{Binding ItemName}" ElementStyle="{StaticResource WrapText}"/>
-                    <DataGridTextColumn Header="Обозначение" Binding="{Binding ItemSymbol}"/>
-                    <DataGridTextColumn Header="ЕИ" Binding="{Binding MeasureName}"/>
-                    <DataGridTextColumn Header="Клв Зак" Binding="{Binding ClientOrderCount}"/>
-                    <DataGridTextColumn Header="Брутто" Binding="{Binding DemandQty, StringFormat=F3}"/>
-                    <DataGridTextColumn Header="Выдано" Binding="{Binding OutQty, StringFormat=F3}"/>
-                    <DataGridTextColumn Header="Резерв" Binding="{Binding FixQity, StringFormat=F3}"/>
-                    <DataGridTextColumn Header="Нетто" Binding="{Binding NetQty, StringFormat=F3}"/>
-                    <DataGridTextColumn Header="Остаток" Binding="{Binding RestQty, StringFormat=F3}"/>
-                    <DataGridTextColumn Header="По складам" Binding="{Binding RestString}"/>
-                    <DataGridTextColumn Header="Мин. ост" Binding="{Binding MinRest, StringFormat=F3}"/>
-                    <DataGridTextColumn Header="Закупка" Binding="{Binding NotReceivedQty, StringFormat=F3}"/>
-                    <DataGridTextColumn Header="К закупке" Binding="{Binding ToSupply, StringFormat=F3}"/>
-                    <DataGridTextColumn Header="Поставщик" Binding="{Binding ClientName}"/>
-                    <DataGridTextColumn Header="СХ" Binding="{Binding WrhName}"/>
-                    <DataGridCheckBoxColumn Header="" Binding="{Binding IsSelected}" />
+                    <DataGridTextColumn Header="Артикул" Binding="{Binding ItemCode}" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Наименование" Width="*" MinWidth="100" Binding="{Binding ItemName}" ElementStyle="{StaticResource WrapText}" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Обозначение" Binding="{Binding ItemSymbol}" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="ЕИ" Binding="{Binding MeasureName}" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Клв Зак" Width="60" Binding="{Binding ClientOrderCount}" IsReadOnly="True" ElementStyle="{StaticResource RightText}"/>
+                    <DataGridTextColumn Header="Брутто" Width="60" IsReadOnly="True" ElementStyle="{StaticResource RightText}">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource NumFormatConverter}" StringFormat="{}{0}">
+                                <Binding Path="DemandQty"/>
+                                <Binding Path="MeasureName"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Выдано" Width="60" IsReadOnly="True" ElementStyle="{StaticResource RightText}">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource NumFormatConverter}" StringFormat="{}{0}">
+                                <Binding Path="OutQty"/>
+                                <Binding Path="MeasureName"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Резерв" Width="60" IsReadOnly="True" ElementStyle="{StaticResource RightText}">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource NumFormatConverter}" StringFormat="{}{0}">
+                                <Binding Path="FixQty"/>
+                                <Binding Path="MeasureName"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Нетто" Width="60" FontWeight="Bold" IsReadOnly="True" ElementStyle="{StaticResource RightText}">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource NumFormatConverter}" StringFormat="{}{0}">
+                                <Binding Path="NetQty"/>
+                                <Binding Path="MeasureName"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Остаток" Width="60" Foreground="Green" FontWeight="Bold" IsReadOnly="True" ElementStyle="{StaticResource RightText}">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource NumFormatConverter}" StringFormat="{}{0}">
+                                <Binding Path="RestQty"/>
+                                <Binding Path="MeasureName"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="По складам" Binding="{Binding RestString}" IsReadOnly="True" ElementStyle="{StaticResource RightText}"/>
+                    <DataGridTextColumn Header="Мин. ост" Width="60" IsReadOnly="True" ElementStyle="{StaticResource RightText}">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource NumFormatConverter}" StringFormat="{}{0}">
+                                <Binding Path="MinRest"/>
+                                <Binding Path="MeasureName"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Закупка" Width="60" IsReadOnly="True" ElementStyle="{StaticResource RightText}">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource NumFormatConverter}" StringFormat="{}{0}">
+                                <Binding Path="NotReceivedQty"/>
+                                <Binding Path="MeasureName"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="К закупке" Width="60" Foreground="Red" IsReadOnly="True" ElementStyle="{StaticResource RightText}">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource NumFormatConverter}" StringFormat="{}{0}">
+                                <Binding Path="ToSupply"/>
+                                <Binding Path="MeasureName"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Поставщик" Binding="{Binding ClientName}" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="СХ" Binding="{Binding WrhName}" IsReadOnly="True"/>
+                    <DataGridTemplateColumn Header="" Width="35">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          VerticalAlignment="Center" HorizontalAlignment="Center" Focusable="False">
+                                </CheckBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
 
@@ -143,20 +212,48 @@
             <DataGrid x:Name="gridDetailData" Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True"
                       VirtualizingPanel.ScrollUnit="Pixel"
                       VirtualizingPanel.VirtualizationMode="Recycling"
-                      EnableRowVirtualization="True">
+                      EnableColumnVirtualization="True"
+                      EnableRowVirtualization="True"
+                      HeadersVisibility="Column">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Заказ клиента" Binding="{Binding ClientOrder}"/>
-                    <DataGridTextColumn Header="Описание" Binding="{Binding ClientOrderNote}" 
-                                        ElementStyle="{StaticResource WrapText}"/>
+                    <DataGridTextColumn Header="Описание" Binding="{Binding ClientOrderNote}" ElementStyle="{StaticResource WrapText}"/>
                     <DataGridTextColumn Header="Срок" Binding="{Binding ToDate, StringFormat='dd.MM.yy'}"/>
-                    <DataGridTextColumn Header="Брутто" Binding="{Binding DemandQty, StringFormat=F3}"/>
+                    <DataGridTextColumn Header="Брутто" Width="80" ElementStyle="{StaticResource RightText}">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource NumFormatConverter}" StringFormat="{}{0}">
+                                <Binding Path="DemandQty"/>
+                                <Binding Path="MeasureName"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
                     <DataGridTextColumn Header="ЕИ" Binding="{Binding MeasureName}"/>
-                    <DataGridTextColumn Header="Детально" Binding="{Binding Notes}" 
-                                        ElementStyle="{StaticResource WrapText}"/>
-                    <DataGridTextColumn Header="Дефицит" Binding="{Binding DeficitQty, StringFormat=F3}"/>
-                    <DataGridTextColumn Header="ТК" Binding="{Binding RequestQty, StringFormat=F3}"/>
-                    <DataGridTextColumn Header="Резерв" Binding="{Binding FixQty, StringFormat=F3}"/>
-                    <DataGridTextColumn Header="Выдано" Binding="{Binding OutQty, StringFormat=F3}"/>
+                    <DataGridTextColumn Header="Детально" Binding="{Binding Notes}" ElementStyle="{StaticResource WrapText}"/>
+                    <DataGridTextColumn Header="Дефицит" Binding="{Binding DeficitQty, StringFormat=F3}" ElementStyle="{StaticResource RightText}"/>
+                    <DataGridTextColumn Header="ТК" Width="80" ElementStyle="{StaticResource RightText}">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource NumFormatConverter}" StringFormat="{}{0}">
+                                <Binding Path="RequestQty"/>
+                                <Binding Path="MeasureName"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Резерв" Width="80" ElementStyle="{StaticResource RightText}">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource NumFormatConverter}" StringFormat="{}{0}">
+                                <Binding Path="FixQty"/>
+                                <Binding Path="MeasureName"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Выдано" Width="80" ElementStyle="{StaticResource RightText}">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource NumFormatConverter}" StringFormat="{}{0}">
+                                <Binding Path="OutQty"/>
+                                <Binding Path="MeasureName"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
                     <DataGridTextColumn Header="Требования" Binding="{Binding RequestName}"/>
                 </DataGrid.Columns>
             </DataGrid>

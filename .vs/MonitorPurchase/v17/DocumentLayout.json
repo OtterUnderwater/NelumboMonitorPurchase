@@ -3,28 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|c:\\users\\prog01\\source\\repos\\nelumbomonitorpurchase\\monitorpurchase\\models\\monitoritem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|solutionrelative:monitorpurchase\\models\\monitoritem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|c:\\users\\prog01\\source\\repos\\nelumbomonitorpurchase\\monitorpurchase\\helpers\\utility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|solutionrelative:monitorpurchase\\helpers\\utility.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|c:\\users\\prog01\\source\\repos\\nelumbomonitorpurchase\\monitorpurchase\\models\\orderinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|solutionrelative:monitorpurchase\\models\\orderinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|c:\\users\\prog01\\source\\repos\\nelumbomonitorpurchase\\monitorpurchase\\models\\supplierinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|solutionrelative:monitorpurchase\\models\\supplierinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|c:\\users\\prog01\\source\\repos\\nelumbomonitorpurchase\\monitorpurchase\\services\\dbservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|solutionrelative:monitorpurchase\\services\\dbservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|c:\\users\\prog01\\source\\repos\\nelumbomonitorpurchase\\monitorpurchase\\monitorcontrol.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|solutionrelative:monitorpurchase\\monitorcontrol.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\monitorpurchase\\monitorcontrol.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|solutionrelative:monitorpurchase\\monitorcontrol.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\monitorpurchase\\monitorcontrol.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{C35C7420-E5CB-487A-BABD-96DE393A6ADB}|MonitorPurchase\\MonitorPurchase.csproj|solutionrelative:monitorpurchase\\monitorcontrol.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     }
   ],
   "DocumentGroupContainers": [
@@ -39,78 +27,39 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "MonitorItem.cs",
-              "DocumentMoniker": "C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\MonitorPurchase\\Models\\MonitorItem.cs",
-              "RelativeDocumentMoniker": "MonitorPurchase\\Models\\MonitorItem.cs",
-              "ToolTip": "C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\MonitorPurchase\\Models\\MonitorItem.cs",
-              "RelativeToolTip": "MonitorPurchase\\Models\\MonitorItem.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAAFAAAAAAAAAA==",
+              "Title": "Utility.cs",
+              "DocumentMoniker": "C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\MonitorPurchase\\Helpers\\Utility.cs",
+              "RelativeDocumentMoniker": "MonitorPurchase\\Helpers\\Utility.cs",
+              "ToolTip": "C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\MonitorPurchase\\Helpers\\Utility.cs",
+              "RelativeToolTip": "MonitorPurchase\\Helpers\\Utility.cs",
+              "ViewState": "AgIAAAIAAAAAAAAAAAAQwCYAAAA5AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-18T12:53:26.346Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "OrderInfo.cs",
-              "DocumentMoniker": "C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\MonitorPurchase\\Models\\OrderInfo.cs",
-              "RelativeDocumentMoniker": "MonitorPurchase\\Models\\OrderInfo.cs",
-              "ToolTip": "C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\MonitorPurchase\\Models\\OrderInfo.cs",
-              "RelativeToolTip": "MonitorPurchase\\Models\\OrderInfo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-18T12:53:02.501Z",
+              "WhenOpened": "2026-05-29T14:19:35.848Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "SupplierInfo.cs",
-              "DocumentMoniker": "C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\MonitorPurchase\\Models\\SupplierInfo.cs",
-              "RelativeDocumentMoniker": "MonitorPurchase\\Models\\SupplierInfo.cs",
-              "ToolTip": "C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\MonitorPurchase\\Models\\SupplierInfo.cs",
-              "RelativeToolTip": "MonitorPurchase\\Models\\SupplierInfo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-18T12:51:46.72Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "DbService.cs",
-              "DocumentMoniker": "C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\MonitorPurchase\\Services\\DbService.cs",
-              "RelativeDocumentMoniker": "MonitorPurchase\\Services\\DbService.cs",
-              "ToolTip": "C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\MonitorPurchase\\Services\\DbService.cs",
-              "RelativeToolTip": "MonitorPurchase\\Services\\DbService.cs",
-              "ViewState": "AgIAACQAAAAAAAAAAADwv5YAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-18T07:32:25.252Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
               "Title": "MonitorControl.xaml.cs",
               "DocumentMoniker": "C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\MonitorPurchase\\MonitorControl.xaml.cs",
               "RelativeDocumentMoniker": "MonitorPurchase\\MonitorControl.xaml.cs",
               "ToolTip": "C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\MonitorPurchase\\MonitorControl.xaml.cs",
               "RelativeToolTip": "MonitorPurchase\\MonitorControl.xaml.cs",
-              "ViewState": "AgIAAOYAAAAAAAAAAAAewIsBAABaAAAAAAAAAA==",
+              "ViewState": "AgIAACEAAAAAAAAAAAAzwDcAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-15T15:00:01.595Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 1,
               "Title": "MonitorControl.xaml",
               "DocumentMoniker": "C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\MonitorPurchase\\MonitorControl.xaml",
               "RelativeDocumentMoniker": "MonitorPurchase\\MonitorControl.xaml",
               "ToolTip": "C:\\Users\\Prog01\\source\\repos\\NelumboMonitorPurchase\\MonitorPurchase\\MonitorControl.xaml",
               "RelativeToolTip": "MonitorPurchase\\MonitorControl.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-05-15T05:37:44.104Z",
+              "WhenOpened": "2026-05-27T12:23:34.746Z",
               "EditorCaption": ""
             }
           ]

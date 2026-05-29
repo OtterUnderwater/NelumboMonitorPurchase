@@ -3,7 +3,6 @@ using MonitorPurchase.Services;
 using MettaFramework.Classes;
 using System;
 using System.Collections;
-using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -26,9 +25,10 @@ namespace MonitorPurchase
         private readonly DbService _dbService;
         private readonly DialogsService _dialogsService;
         private UserControl tbl = null;
-        private DataTable dtOrders = null;
-        private DataTable dtData = null;
-        private DataTable dtDetailData = null;
+        private List<Wrh> _wrhs = null;
+        private List<OrderInfo> _orders = null;
+        private List<MonitorItem> _items = null;
+        private List<MonitorDetailItem> _details = null;
         private CancellationTokenSource _cancellationTokenSource;
         private CancellationTokenSource _detailCancellationTokenSource;
         private void IsDeficitOnly_Changed(object sender, RoutedEventArgs e) => LoadData();
@@ -43,38 +43,52 @@ namespace MonitorPurchase
             InitializeComponent();
             CString = inp["ConnectionString"].ToString();
             RegID = (int)inp["RegID"];
-            if (inp.ContainsKey("IsDebug")) IsDebug = true;
 
             _dbService = new DbService(CString, RegID);
             _dialogsService = new DialogsService();
             Loaded += SupplyMonitor_Window_Loaded;
         }
-
         private async void SupplyMonitor_Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (!IsDebug)
-                {
-                    var inp = new Hashtable();
-                    tbl = Utility.GetTablePanel(new Guid("d6940d10-3d4f-4393-b0ad-6df4add7f715"), inp);
-                }
+                var inp = new Hashtable();
+                tbl = Utility.GetTablePanel(new Guid("d6940d10-3d4f-4393-b0ad-6df4add7f715"), inp);
                 await LoadOrdersAsync();
+                await LoadWrhsAsync();
+
+                chkIsDeficitOnly.IsChecked = true; 
             }
             catch (Exception error)
             {
                 Common.MsgBox("Ошибка при инициализации формы!", error);
             }
         }
-
+        private async Task LoadWrhsAsync()
+        {
+            try
+            {
+                _wrhs = await _dbService.GetWrhAsync();
+                Dispatcher.Invoke(() =>
+                {
+                    var list = _wrhs?.Select(w => w.WrhName).Distinct().OrderBy(n => n).ToList() ?? new List<string>();
+                    list.Insert(0, "<Все>");
+                    cmbWrh.ItemsSource = list;
+                    cmbWrh.SelectedIndex = 0;
+                });
+            }
+            catch (Exception error)
+            {
+                Common.MsgBox("Ошибка при загрузке складов!", error);
+            }
+        }
         private async Task LoadOrdersAsync()
         {
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var result = await _dbService.LoadOrdersAsync();
-                dtOrders = result?.Tables[0];
-                Dispatcher.Invoke(() => gridOrders.ItemsSource = dtOrders?.DefaultView);
+                _orders = await _dbService.LoadOrdersAsync();
+                Dispatcher.Invoke(() => gridOrders.ItemsSource = _orders);
             }
             catch (Exception error)
             {
@@ -85,24 +99,18 @@ namespace MonitorPurchase
                 Mouse.OverrideCursor = null;
             }
         }
-
         private async void LoadData()
         {
-            _cancellationTokenSource?.Cancel();
-            _cancellationTokenSource = new CancellationTokenSource();
-            var cancellationToken = _cancellationTokenSource.Token;
-
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var selectedOrder = gridOrders.SelectedItem as DataRowView;
-                var orderID = selectedOrder?["ClientOrderID"] != DBNull.Value ? selectedOrder["ClientOrderID"]?.ToString() : null;
+                var selectedOrder = gridOrders.SelectedItem as OrderInfo;
+                var orderID = selectedOrder?.ClientOrderID;
                 var isDeficitOnly = chkIsDeficitOnly.IsChecked ?? false;
 
-                var result = await _dbService.LoadDataAsync(orderID, isDeficitOnly, cancellationToken);
-                if (result == null || cancellationToken.IsCancellationRequested) return;
+                _items = await _dbService.LoadDataAsync(orderID, isDeficitOnly);
+                if (_items == null) return;
 
-                dtData = result.Tables[0];
                 Dispatcher.Invoke(() =>
                 {
                     LoadSuppliers();
@@ -120,8 +128,7 @@ namespace MonitorPurchase
                 Mouse.OverrideCursor = null;
             }
         }
-
-        private async void LoadDetailData(int itemID, string clientOrderID = null)
+        private async void LoadDetailData(int itemID, int? clientOrderID = null)
         {
             _detailCancellationTokenSource?.Cancel();
             _detailCancellationTokenSource = new CancellationTokenSource();
@@ -130,13 +137,12 @@ namespace MonitorPurchase
             try
             {
                 Dispatcher.Invoke(() => gridDetailData.ItemsSource = null);
-                var result = await _dbService.LoadDetailDataAsync(itemID, clientOrderID, cancellationToken);
-                if (result == null || cancellationToken.IsCancellationRequested) return;
+                _details = await _dbService.LoadDetailDataAsync(itemID, clientOrderID);
+                if (_details == null || cancellationToken.IsCancellationRequested) return;
 
-                dtDetailData = result.Tables[0];
                 Dispatcher.Invoke(() =>
                 {
-                    gridDetailData.ItemsSource = dtDetailData?.Rows.Count > 0 ? dtDetailData.DefaultView : null;
+                    gridDetailData.ItemsSource = _details?.Count > 0 ? _details : null;
                 });
             }
             catch (OperationCanceledException) { }
@@ -145,70 +151,57 @@ namespace MonitorPurchase
                 Dispatcher.Invoke(() => Common.MsgBox("Ошибка при загрузке деталей!", error));
             }
         }
-
         private void LoadSuppliers()
         {
-            if (dtData == null) return;
-            var list = dtData.AsEnumerable()
-                .Where(r => r["ClientName"] != DBNull.Value && !string.IsNullOrEmpty(r["ClientName"].ToString()))
-                .Select(r => r["ClientName"].ToString())
+            if (_items == null) return;
+            var list = _items
+                .Where(r => !string.IsNullOrEmpty(r.ClientName))
+                .Select(r => r.ClientName)
                 .Distinct().OrderBy(n => n).ToList();
             list.Insert(0, "<Все>");
             cmbSupplier.ItemsSource = list;
             cmbSupplier.SelectedIndex = 0;
         }
-
         private void ApplyFilters()
         {
-            if (dtData == null) return;
+            if (_items == null) return;
             try
             {
-                var filter = BuildFilter();
-                gridData.ItemsSource = string.IsNullOrEmpty(filter)
-                    ? dtData.DefaultView
-                    : new DataView(dtData, filter, "", DataViewRowState.CurrentRows);
+                var filteredItems = _items.AsEnumerable();
+
+                if (!string.IsNullOrEmpty(txtCodeFilter.Text))
+                    filteredItems = filteredItems.Where(i => i.ItemCode?.ToLower().Contains(txtCodeFilter.Text.ToLower()) == true);
+
+                if (!string.IsNullOrEmpty(txtNameFilter.Text))
+                    filteredItems = filteredItems.Where(i => i.ItemName?.ToLower().Contains(txtNameFilter.Text.ToLower()) == true);
+
+                if (!string.IsNullOrEmpty(txtSymbolFilter.Text))
+                    filteredItems = filteredItems.Where(i => i.ItemSymbol?.ToLower().Contains(txtSymbolFilter.Text.ToLower()) == true);
+
+                if (cmbWrh.SelectedValue != null && cmbWrh.SelectedValue.ToString() != "<Все>")
+                    filteredItems = filteredItems.Where(i => i.WrhName == cmbWrh.SelectedValue.ToString());
+
+                if (cmbSupplier.SelectedValue != null && cmbSupplier.SelectedValue.ToString() != "<Все>")
+                    filteredItems = filteredItems.Where(i => i.ClientName == cmbSupplier.SelectedValue.ToString());
+
+                gridData.ItemsSource = filteredItems.ToList();
             }
-            catch { gridData.ItemsSource = dtData.DefaultView; }
+            catch { gridData.ItemsSource = _items; }
         }
-
-        private string BuildFilter()
-        {
-            var filter = new StringBuilder();
-            AddFilterCondition(filter, "ItemCode", txtCodeFilter.Text);
-            AddFilterCondition(filter, "ItemName", txtNameFilter.Text);
-            AddFilterCondition(filter, "ItemSymbol", txtSymbolFilter.Text);
-            AddFilterCondition(filter, "WrhName", txtWrhFilter.Text);
-
-            if (cmbSupplier.SelectedValue != null && cmbSupplier.SelectedValue.ToString() != "<Все>")
-            {
-                AddFilterCondition(filter, "ClientName", cmbSupplier.SelectedValue.ToString(), true);
-            }
-
-            return filter.ToString();
-        }
-
-        private void AddFilterCondition(StringBuilder filter, string field, string value, bool exactMatch = false)
-        {
-            if (string.IsNullOrEmpty(value)) return;
-            if (filter.Length > 0) filter.Append(" AND ");
-
-            filter.Append(exactMatch
-                ? $"{field} = '{value}'"
-                : $"{field} like '%{value}%'");
-        }
-
         private void ClearDetails()
         {
             gridDetailData.ItemsSource = null;
-            dtDetailData = null;
+            _details = null;
         }
-
         private void OrderFilter_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (dtOrders == null) return;
-            gridOrders.ItemsSource = string.IsNullOrEmpty(txtOrderFilter.Text)
-                ? dtOrders.DefaultView
-                : new DataView(dtOrders, $"DocNumber like '%{txtOrderFilter.Text}%'", "", DataViewRowState.CurrentRows);
+            if (_orders == null) return;
+
+            var filteredOrders = string.IsNullOrEmpty(txtOrderFilter.Text)
+                ? _orders
+                : _orders.Where(o => o.DocNumber?.ToLower().Contains(txtOrderFilter.Text.ToLower()) == true).ToList();
+
+            gridOrders.ItemsSource = filteredOrders;
         }
 
         /// <summary>
@@ -228,35 +221,38 @@ namespace MonitorPurchase
             gridData.SelectedItem = null;
             gridData.UpdateLayout();
         }
-
         private void btnSelectAll_Click(object sender, RoutedEventArgs e)
         {
-            if (gridData.ItemsSource is DataView dv)
-                foreach (DataRowView row in dv) row["IsSelected"] = true;
-        }
+            if (gridData.ItemsSource is List<MonitorItem> items)
+            {
+                foreach (var item in items)
+                    item.IsSelected = true;
 
+                gridData.ItemsSource = null;
+                gridData.ItemsSource = items;
+            }
+        }
         private void btnResetAll_Click(object sender, RoutedEventArgs e)
         {
-            if (gridData.ItemsSource is DataView dv)
-                foreach (DataRowView row in dv) row["IsSelected"] = false;
-        }
-
-        private async void gridData_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var row = gridData.SelectedItem as DataRowView;
-            if (row != null)
+            if (gridData.ItemsSource is List<MonitorItem> items)
             {
-                lblItem.Text = $"{row["ItemCode"]}  {row["ItemName"]}  {row["ItemSymbol"]}";
+                foreach (var item in items)
+                    item.IsSelected = false;
 
-                if (row["ItemID"] != DBNull.Value)
-                {
-                    var itemID = Convert.ToInt32(row["ItemID"]);
-                    var selectedOrder = gridOrders.SelectedItem as DataRowView;
-                    var clientOrderID = selectedOrder?["ClientOrderID"] != DBNull.Value
-                        ? selectedOrder["ClientOrderID"].ToString()
-                        : null;
-                    LoadDetailData(itemID, clientOrderID);
-                }
+                gridData.ItemsSource = null;
+                gridData.ItemsSource = items;
+            }
+        }
+        private void gridData_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var item = gridData.SelectedItem as MonitorItem;
+            if (item != null)
+            {
+                lblItem.Text = $"{item.ItemCode}  {item.ItemName}  {item.ItemSymbol}";
+
+                var selectedOrder = gridOrders.SelectedItem as OrderInfo;
+                var clientOrderID = selectedOrder?.ClientOrderID;
+                LoadDetailData(item.ItemID, clientOrderID);
             }
             else
             {
@@ -264,14 +260,12 @@ namespace MonitorPurchase
                 ClearDetails();
             }
         }
-
         private void lblItem_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            var row = gridData.SelectedItem as DataRowView;
-            if (row != null && row["ItemID"] != DBNull.Value)
-                try { Utility.OpenProductCard((int)row["ItemID"]); } catch { }
+            var item = gridData.SelectedItem as MonitorItem;
+            if (item != null)
+                try { Utility.OpenProductCard(item.ItemID); } catch { }
         }
-
         private async void btnCreateOrders_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -280,30 +274,33 @@ namespace MonitorPurchase
                     MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
 
                 Mouse.OverrideCursor = Cursors.Wait;
-                await Task.Run(async () =>
+
+                var selectedItems = _items?.Where(i => i.IsSelected && i.ToSupply > 0).ToList();
+                if (selectedItems == null || selectedItems.Count == 0)
                 {
-                    var dv = new DataView(dtData, "IsSelected=1 AND ToSupply > 0", "", DataViewRowState.CurrentRows);
-                    var suppliers = dv.ToTable(true, "ClientName");
-                    var selectedOrder = gridOrders.SelectedItem as DataRowView;
-                    var orders = selectedOrder?["ClientOrderID"] != DBNull.Value ? selectedOrder["ClientOrderID"].ToString() : "";
+                    MessageBox.Show("Нет выбранных позиций с потребностью в закупке!", "Внимание",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
-                    foreach (DataRow row in suppliers.Rows)
+                var suppliers = selectedItems.Select(i => i.ClientName).Distinct().ToList();
+                var selectedOrder = gridOrders.SelectedItem as OrderInfo;
+                var orders = selectedOrder?.ClientOrderID?.ToString() ?? "";
+
+                foreach (var clientName in suppliers)
+                {
+                    if (string.IsNullOrEmpty(clientName)) continue;
+
+                    var result = await _dbService.CreateOrderAsync(clientName, orders);
+                    if (!result.Success) continue;
+
+                    var itemsForSupplier = selectedItems.Where(i => i.ClientName == clientName && i.ToSupply > 0).ToList();
+                    foreach (var item in itemsForSupplier)
                     {
-                        var clientName = row["ClientName"].ToString();
-                        if (string.IsNullOrEmpty(clientName)) continue;
-
-                        var (docID, result) = await _dbService.CreateOrderAsync(clientName, orders);
-                        if (result != "OK" || docID <= 0) continue;
-
-                        var dvRows = new DataView(dtData, $"IsSelected=1 AND ClientName='{clientName}' AND ToSupply>0", "", DataViewRowState.CurrentRows);
-                        foreach (DataRowView rowView in dvRows)
-                        {
-                            var qty = Convert.ToDecimal(rowView["ToSupply"]);
-                            if (qty > 0)
-                                await _dbService.AddOrderRowAsync(docID, Convert.ToInt32(rowView["ItemID"]), qty);
-                        }
+                        if (item.ToSupply > 0)
+                            await _dbService.AddOrderRowAsync(result.DocID, item.ItemID, item.ToSupply);
                     }
-                });
+                }
 
                 MessageBox.Show("Заказы поставщикам созданы (со статусом <Новый>)!", "Внимание",
                     MessageBoxButton.OK, MessageBoxImage.Information);
@@ -312,66 +309,49 @@ namespace MonitorPurchase
             catch (Exception error) { Common.MsgBox("Ошибка при создании Заказа поставщику!", error); }
             finally { Mouse.OverrideCursor = null; }
         }
-
         private async void btnChangeMainSupplier_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                var selectedRows = GetSelectedRows();
-                if (selectedRows.Count == 0)
+                var selectedItems = _items?.Where(i => i.IsSelected).ToList();
+                if (selectedItems == null || selectedItems.Count == 0)
                 {
                     MessageBox.Show("Не выбрано ни одной позиции!", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-
                 var newSupplier = await SelectSupplierAsync();
                 if (newSupplier == null) return;
 
-                if (MessageBox.Show($"Сменить основного поставщика на '{newSupplier.ClientName}' для {selectedRows.Count} позиций?",
+                if (MessageBox.Show($"Сменить основного поставщика на '{newSupplier.ClientName}' для {selectedItems.Count} позиций?",
                     "Внимание", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
 
                 Mouse.OverrideCursor = Cursors.Wait;
-                var selectedOrder = gridOrders.SelectedItem as DataRowView;
-                var clientOrderID = selectedOrder?["ClientOrderID"] != DBNull.Value ? selectedOrder["ClientOrderID"].ToString() : null;
+                var selectedOrder = gridOrders.SelectedItem as OrderInfo;
+                var clientOrderID = selectedOrder?.ClientOrderID;
 
-                foreach (var row in selectedRows)
+                foreach (var item in selectedItems)
                 {
-                    if (row["ItemID"] != DBNull.Value)
-                    {
-                        var result = await _dbService.ChangeMainSupplierAsync(Convert.ToInt32(row["ItemID"]), newSupplier.ClientID, clientOrderID);
-
-                        if (result != "OK")
-                            throw new Exception($"Ошибка при смене поставщика: {result}");
-                    }
+                    var result = await _dbService.ChangeMainSupplierAsync(item.ItemID, newSupplier.ClientID, clientOrderID);
+                    if (!result)
+                        throw new Exception($"Ошибка при смене поставщика для {item.ItemCode}: {result}");
                 }
 
-                MessageBox.Show($"Для {selectedRows.Count} позиций основной поставщик успешно изменен!", "Информация",
+                MessageBox.Show($"Для {selectedItems.Count} позиций основной поставщик успешно изменен!", "Информация",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 LoadData();
             }
             catch (Exception error) { Common.MsgBox("Ошибка при смене основного поставщика!", error); }
             finally { Mouse.OverrideCursor = null; }
         }
-
         private async Task<SupplierInfo> SelectSupplierAsync()
         {
             try
             {
-                var result = await _dbService.GetSuppliersAsync();
-                if (result == null || result.Tables.Count == 0 || result.Tables[0].Rows.Count == 0)
+                var suppliers = await _dbService.GetSuppliersAsync();
+                if (suppliers == null || suppliers.Count == 0)
                 {
                     MessageBox.Show("Список поставщиков пуст!", "Внимание", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return null;
-                }
-
-                var suppliers = new List<SupplierInfo>();
-                foreach (DataRow row in result.Tables[0].Rows)
-                {
-                    suppliers.Add(new SupplierInfo
-                    {
-                        ClientID = Convert.ToInt32(row["ClientID"]),
-                        ClientName = row["ClientName"].ToString()
-                    });
                 }
 
                 SupplierInfo selectedSupplier = null;
@@ -389,12 +369,6 @@ namespace MonitorPurchase
                 return null;
             }
         }
-
-        private List<DataRowView> GetSelectedRows()
-        {
-            return gridData.ItemsSource is DataView dv
-                ? dv.Cast<DataRowView>().Where(row => Convert.ToBoolean(row["IsSelected"])).ToList()
-                : new List<DataRowView>();
-        }
     }
 }
+

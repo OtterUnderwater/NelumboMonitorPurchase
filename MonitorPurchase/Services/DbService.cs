@@ -1,11 +1,13 @@
-﻿using MettaFramework.Classes;
+﻿using Dapper;
+using MettaFramework.Classes;
+using MonitorPurchase.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace MonitorPurchase.Services
 {
@@ -13,7 +15,6 @@ namespace MonitorPurchase.Services
     {
         private readonly string _connectionString;
         private readonly int _regID;
-
         public DbService(string connectionString, int regID)
         {
             _connectionString = connectionString;
@@ -21,130 +22,226 @@ namespace MonitorPurchase.Services
         }
 
         /// <summary>
-        /// Загрузка заказов (ActionID = 1)
+        /// Загрузка заказов
+        /// [crm.ext_SupplyMonitor ActionID = 1]
         /// </summary>
-        public async Task<DataSet> LoadOrdersAsync(CancellationToken cancellationToken = default)
+        public async Task<List<OrderInfo>> LoadOrdersAsync()
         {
-            return await Task.Run(() =>
+            try
             {
-                if (cancellationToken.IsCancellationRequested) return null;
-                DbCmd cmd = new DbCmd(_connectionString, "crm.ext_SupplyMonitor");
-                cmd.Parameters.AddWithValue("ActionID", 1);
-                return cmd.ExecuteDataSet();
-            }, cancellationToken);
-        }
-
-        /// <summary>
-        /// Загрузка основных данных мониторинга (ActionID = 2)
-        /// </summary>
-        public async Task<DataSet> LoadDataAsync(string orderID, bool isDeficitOnly, CancellationToken cancellationToken = default)
-        {
-            return await Task.Run(() =>
-            {
-                if (cancellationToken.IsCancellationRequested) return null;
-                DbCmd cmd = new DbCmd(_connectionString, "crm.ext_SupplyMonitor");
-                cmd.Parameters.AddWithValue("ActionID", 2);
-                cmd.Parameters.AddWithValue("IsDeficitOnly", isDeficitOnly);
-                if (!string.IsNullOrEmpty(orderID))
-                    cmd.Parameters.AddWithValue("ClientOrderID", orderID);
-                return cmd.ExecuteDataSet();
-            }, cancellationToken);
-        }
-
-        /// <summary>
-        /// Загрузка детальных данных по позиции (ActionID = 3)
-        /// </summary>
-        public async Task<DataSet> LoadDetailDataAsync(int itemID, string clientOrderID, CancellationToken cancellationToken = default)
-        {
-            return await Task.Run(() =>
-            {
-                if (cancellationToken.IsCancellationRequested) return null;
-                DbCmd cmd = new DbCmd(_connectionString, "crm.ext_SupplyMonitor");
-                cmd.Parameters.AddWithValue("ActionID", 3);
-                cmd.Parameters.AddWithValue("ItemID", itemID);
-                if (!string.IsNullOrEmpty(clientOrderID))
-                    cmd.Parameters.AddWithValue("ClientOrderID", clientOrderID);
-                return cmd.ExecuteDataSet();
-            }, cancellationToken);
-        }
-
-        /// <summary>
-        /// Получение списка поставщиков (ActionID = 4)
-        /// </summary>
-        public async Task<DataSet> GetSuppliersAsync(CancellationToken cancellationToken = default)
-        {
-            return await Task.Run(() =>
-            {
-                if (cancellationToken.IsCancellationRequested) return null;
-                DbCmd cmd = new DbCmd(_connectionString, "crm.ext_SupplyMonitor");
-                cmd.Parameters.AddWithValue("ActionID", 4);
-                return cmd.ExecuteDataSet();
-            }, cancellationToken);
-        }
-
-        /// <summary>
-        /// Смена основного поставщика (ActionID = 5)
-        /// </summary>
-        public async Task<string> ChangeMainSupplierAsync(int itemID, int newSupplierID, string clientOrderID = null)
-        {
-            return await Task.Run(() =>
-            {
-                DbCmd cmd = new DbCmd(_connectionString, "crm.ext_SupplyMonitor");
-                cmd.Parameters.AddWithValue("ActionID", 5);
-                cmd.Parameters.AddWithValue("ItemID", itemID);
-                cmd.Parameters.AddWithValue("ClientID", newSupplierID);
-                if (!string.IsNullOrEmpty(clientOrderID))
+                using (var connection = new SqlConnection(_connectionString))
                 {
-                    cmd.Parameters.AddWithValue("ClientOrderID", clientOrderID);
+                    await connection.OpenAsync();
+                    using (var multi = await connection.QueryMultipleAsync( "crm.ext_SupplyMonitor", new { ActionID = 1 }, commandType: CommandType.StoredProcedure))
+                    {
+                        var orders = (await multi.ReadAsync<OrderInfo>()).ToList();
+                        return orders;
+                    }
                 }
-                cmd.Parameters.Add("Result", SqlDbType.VarChar, 150).Direction = ParameterDirection.Output;
-                cmd.ExecuteNonQuery();
-                return cmd.Parameters["Result"].Value.ToString();
-            });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Загрузка основных данных мониторинга
+        /// [crm.ext_SupplyMonitor ActionID = 2]
+        /// </summary>
+        public async Task<List<MonitorItem>> LoadDataAsync(int? orderID, bool isDeficitOnly)
+        {
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    var parameters = new DynamicParameters();
+                    parameters.Add("ActionID", 2);
+                    parameters.Add("IsDeficitOnly", isDeficitOnly);
+                    if (orderID != null && orderID != 0)
+                    {
+                        parameters.Add("ClientOrderID", orderID);
+                    }
+                    using (var multi = await connection.QueryMultipleAsync("crm.ext_SupplyMonitor", parameters, commandType: CommandType.StoredProcedure))
+                    {
+                        var items = (await multi.ReadAsync<MonitorItem>()).ToList();
+                        return items;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Загрузка детальных данных по позиции
+        /// [crm.ext_SupplyMonitor ActionID = 3]
+        /// </summary>
+        public async Task<List<MonitorDetailItem>> LoadDetailDataAsync(int itemID, int? clientOrderID)
+        {
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    var parameters = new DynamicParameters();
+                    parameters.Add("ActionID", 3);
+                    parameters.Add("ItemID", itemID);
+                    if (clientOrderID != 0) parameters.Add("ClientOrderID", clientOrderID);
+
+                    using (var multi = await connection.QueryMultipleAsync("crm.ext_SupplyMonitor", parameters, commandType: CommandType.StoredProcedure))
+                    {
+                        var items = (await multi.ReadAsync<MonitorDetailItem>()).ToList();
+                        return items;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Получение списка поставщиков
+        /// [crm.ext_SupplyMonitor ActionID = 4]
+        /// </summary>
+        public async Task<List<SupplierInfo>> GetSuppliersAsync()
+        {
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (var multi = await connection.QueryMultipleAsync("crm.ext_SupplyMonitor", new { ActionID = 4 }, commandType: CommandType.StoredProcedure))
+                    {
+                        var suppliers = (await multi.ReadAsync<SupplierInfo>()).ToList();
+                        return suppliers;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Получение списка Складов
+        /// [crm.ext_SupplyMonitor ActionID = 6]
+        /// </summary>
+        public async Task<List<Wrh>> GetWrhAsync()
+        {
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    using (var multi = await connection.QueryMultipleAsync("crm.ext_SupplyMonitor", new { ActionID = 6 }, commandType: CommandType.StoredProcedure))
+                    {
+                        var wrhs = (await multi.ReadAsync<Wrh>()).ToList();
+                        return wrhs;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Смена основного поставщика
+        /// [crm.ext_SupplyMonitor ActionID = 5]
+        /// </summary>
+        public async Task<bool> ChangeMainSupplierAsync(int itemID, int newSupplierID, int? clientOrderID = null)
+        {
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    var parameters = new DynamicParameters();
+                    parameters.Add("ActionID", 5);
+                    parameters.Add("ItemID", itemID);
+                    parameters.Add("ClientID", newSupplierID);
+                    if (clientOrderID != null)
+                    {
+                        parameters.Add("ClientOrderID", clientOrderID);
+                    }
+                    await connection.ExecuteAsync("crm.ext_SupplyMonitor", parameters, commandType: CommandType.StoredProcedure);
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
         /// Создание заказа поставщику (ActionID = 10 из crm.ext_Metall)
+        /// [crm.ext_Metall ActionID = 10]
         /// </summary>
-        public async Task<(int DocID, string Result)> CreateOrderAsync(string clientName, string orders)
+        public async Task<(int DocID, bool Success)> CreateOrderAsync(string clientName, string orders)
         {
-            return await Task.Run(() =>
+            try
             {
-                DbCmd cmd = new DbCmd(_connectionString, "crm.ext_Metall");
-                cmd.Parameters.AddWithValue("ActionID", 10);
-                cmd.Parameters.AddWithValue("RegID", _regID);
-                cmd.Parameters.AddWithValue("ClientName", clientName);
-                cmd.Parameters.AddWithValue("Orders", orders);
-                cmd.Parameters.AddWithValue("DocTypeID", 1);
-                cmd.Parameters.Add("Result", SqlDbType.VarChar, 150).Direction = ParameterDirection.Output;
-                DataSet ds = cmd.ExecuteDataSet();
-                string result = cmd.Parameters["Result"].Value.ToString();
-                int docID = -1;
-                if (result == "OK" && ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+                using (var connection = new SqlConnection(_connectionString))
                 {
-                    docID = Convert.ToInt32(ds.Tables[0].Rows[0]["DocID"]);
+                    var parameters = new DynamicParameters();
+                    parameters.Add("ActionID", 10);
+                    parameters.Add("RegID", _regID);
+                    parameters.Add("ClientName", clientName);
+                    parameters.Add("Orders", orders);
+                    parameters.Add("DocTypeID", 1);
+                    parameters.Add("DocID", dbType: DbType.String, direction: ParameterDirection.Output, size: 50);
+
+                    await connection.ExecuteAsync("mes.ext_Metall", parameters, commandType: CommandType.StoredProcedure);
+
+                    int docID = parameters.Get<int?>("DocID") ?? -1;
+                    bool success = docID > 0;
+                    return (docID, success);
                 }
-                return (docID, result);
-            });
+            }
+            catch
+            {
+                return (-1, false);
+            }
         }
 
         /// <summary>
-        /// Добавление строки в заказ поставщику (ActionID = 11 из crm.ext_Metall)
+        /// Добавление строки в заказ поставщику
+        /// [crm.ext_Metall ActionID = 11]
         /// </summary>
-        public async Task<string> AddOrderRowAsync(int docID, int itemID, decimal qty)
+        public async Task<bool> AddOrderRowAsync(int docID, int itemID, decimal qty)
         {
-            return await Task.Run(() =>
+            try
             {
-                DbCmd cmd = new DbCmd(_connectionString, "crm.ext_Metall");
-                cmd.Parameters.AddWithValue("ActionID", 11);
-                cmd.Parameters.AddWithValue("RegID", _regID);
-                cmd.Parameters.AddWithValue("DocID", docID);
-                cmd.Parameters.AddWithValue("ItemID", itemID);
-                cmd.Parameters.AddWithValue("Qty", qty);
-                cmd.Parameters.Add("Result", SqlDbType.VarChar, 150).Direction = ParameterDirection.Output;
-                cmd.ExecuteNonQuery();
-                return cmd.Parameters["Result"].Value.ToString();
-            });
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    var parameters = new DynamicParameters();
+                    parameters.Add("ActionID", 11);
+                    parameters.Add("RegID", _regID);
+                    parameters.Add("DocID", docID);
+                    parameters.Add("ItemID", itemID);
+                    parameters.Add("Qty", qty);
+
+                    await connection.ExecuteAsync("mes.ext_Metall", parameters, commandType: CommandType.StoredProcedure);
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

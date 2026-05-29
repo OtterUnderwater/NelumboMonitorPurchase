@@ -21,3 +21,11 @@ C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\stdole.dll
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\MonitorPurchase.dll.config
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\MettaFramework.pdb
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\Dapper.dll
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\System.Threading.Tasks.Extensions.dll
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\Dapper.xml
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\Microsoft.Bcl.AsyncInterfaces.xml
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\System.Threading.Tasks.Extensions.xml
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase.WinForms\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml

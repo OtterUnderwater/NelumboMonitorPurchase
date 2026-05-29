@@ -42,3 +42,16 @@ C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Sy
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Syncfusion.SfGrid.WPF.xml
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Syncfusion.SfInput.WPF.xml
 C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\obj\Debug\Styles.baml
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Dapper.dll
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Dapper.Mapper.dll
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\System.Data.SqlClient.dll
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\System.Threading.Tasks.Extensions.dll
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Dapper.xml
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\Microsoft.Bcl.AsyncInterfaces.xml
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\System.Data.SqlClient.xml
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\bin\Debug\System.Threading.Tasks.Extensions.xml
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Users\Prog01\source\repos\NelumboMonitorPurchase\MonitorPurchase\obj\Debug\MonitorPurchase_MarkupCompile.lref

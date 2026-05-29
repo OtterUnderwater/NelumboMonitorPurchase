@@ -35,7 +35,7 @@ namespace MonitorPurchase.Services
                 Height = 400,
                 ResizeMode = ResizeMode.CanResize,
                 ShowInTaskbar = true,
-                Tag = null // Здесь будет храниться выбранный поставщик
+                Tag = null 
             };
 
             if (owner != null)

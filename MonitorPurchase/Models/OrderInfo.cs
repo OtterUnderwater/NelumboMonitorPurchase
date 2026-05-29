@@ -12,7 +12,7 @@ namespace MonitorPurchase.Models
     public class OrderInfo
     {
         public string DocNumber { get; set; }
-        public DateTime DocDate { get; set; }
-        public string ClientOrderID { get; set; }
+        public DateTime? DocDate { get; set; }
+        public int? ClientOrderID { get; set; }
     }
 }
